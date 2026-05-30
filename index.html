@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>はたらきやすさボイス｜KINOWA Holdings</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background:#f4f7fb; color:#1f2d3d; font-family:'Zen Maru Gothic','Hiragino Sans',sans-serif; }
+  button { font-family:inherit; cursor:pointer; }
+  button:hover { filter:brightness(0.97); }
+  select { font-family:inherit; background:#fff; color:#1f2d3d; border:1px solid #cbd5e1; border-radius:8px; padding:9px 12px; font-size:14px; }
+  select:focus { outline:2px solid #00B388; }
+
+  header { display:flex; align-items:center; gap:24px; padding:16px 28px; background:#fff; border-bottom:1px solid #e2e8f0; flex-wrap:wrap; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .brandMark { font-size:30px; color:#00B388; }
+  .brandName { font-weight:700; font-size:16px; color:#0f2e22; }
+  .brandSub { font-size:12px; color:#64748b; }
+  nav { display:flex; gap:4px; }
+  .tab { background:transparent; color:#64748b; border:none; padding:8px 16px; border-radius:8px; font-size:14px; font-weight:600; }
+  .tab.active { background:#e8f5ef; color:#00B388; }
+  .roleBox { margin-left:auto; display:flex; gap:8px; }
+  main { max-width:960px; margin:0 auto; padding:32px 24px 80px; }
+  footer { text-align:center; padding:16px; font-size:12px; color:#94a3b8; border-top:1px solid #e2e8f0; background:#fff; }
+
+  h1 { font-size:38px; line-height:1.3; margin-bottom:20px; font-weight:700; color:#0f2e22; }
+  h2 { font-size:24px; font-weight:700; color:#0f2e22; }
+  h3 { font-size:16px; margin-bottom:16px; font-weight:700; color:#334155; }
+  .hero { text-align:center; padding:24px 0; }
+  .lead { max-width:560px; margin:0 auto; color:#52677d; line-height:1.9; font-size:15px; }
+  .heroBtns { display:flex; gap:12px; justify-content:center; margin-top:28px; flex-wrap:wrap; }
+  .statRow { display:flex; gap:16px; justify-content:center; margin:32px 0; flex-wrap:wrap; }
+  .stat { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:20px 32px; text-align:center; min-width:130px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+  .statValue { font-size:26px; font-weight:700; color:#00B388; }
+  .statLabel { font-size:12px; color:#64748b; margin-top:4px; }
+  .note { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:24px; font-size:14px; color:#52677d; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+  .note strong { color:#0f2e22; }
+  .note p { margin-top:8px; line-height:1.7; }
+
+  .primaryBtn { background:#00B388; color:#fff; border:none; padding:12px 24px; border-radius:10px; font-weight:700; font-size:15px; }
+  .ghostBtn { background:#fff; color:#52677d; border:1px solid #cbd5e1; padding:12px 24px; border-radius:10px; font-weight:600; font-size:15px; }
+  .disabledBtn { background:#e2e8f0; color:#94a3b8; border:none; padding:12px 24px; border-radius:10px; font-weight:700; font-size:15px; cursor:not-allowed; }
+
+  .metaRow { display:flex; gap:16px; flex-wrap:wrap; margin:20px 0; }
+  .field { display:flex; flex-direction:column; gap:6px; flex:1; min-width:180px; }
+  .fieldLabel { font-size:13px; color:#52677d; font-weight:600; }
+  .req { color:#dc2626; }
+
+  .secLabel { font-size:12px; font-weight:700; color:#00B388; margin:24px 0 8px; letter-spacing:.04em; }
+  .qCard { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:20px; margin-bottom:14px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+  .qNum { font-size:12px; color:#00B388; font-weight:700; margin-bottom:6px; }
+  .qText { font-size:15px; margin-bottom:16px; line-height:1.6; color:#1f2d3d; }
+  .scaleRow { display:flex; gap:6px; }
+  .scaleBtn { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 2px; border-radius:10px; border:1.5px solid #e2e8f0; background:#f8fafc; color:#64748b; transition:all .15s; }
+  .scaleBtn.active { border-color:#00B388; background:#e8f5ef; color:#00B388; }
+  .scaleNum { font-size:16px; font-weight:700; }
+  .scaleLbl { font-size:9px; text-align:center; line-height:1.15; }
+  @media(max-width:560px){ .scaleLbl { display:none; } }
+
+  .submitRow { display:flex; align-items:center; justify-content:space-between; margin-top:12px; }
+  .thanks { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; text-align:center; }
+  .checkMark { width:64px; height:64px; border-radius:50%; background:#e8f5ef; color:#00B388; display:flex; align-items:center; justify-content:center; font-size:32px; margin-bottom:20px; }
+
+  .dashHead { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+  .empty { background:#fff; border:1px dashed #cbd5e1; border-radius:14px; padding:40px; text-align:center; color:#94a3b8; font-size:14px; }
+  .cardGrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:14px; margin-bottom:24px; }
+  .scoreCard { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:18px; min-height:150px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+  .scoreCardTop { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .storeName { font-weight:700; font-size:15px; color:#0f2e22; }
+  .nBadge { font-size:11px; color:#64748b; background:#f1f5f9; padding:2px 8px; border-radius:6px; }
+  .bigScore { font-size:40px; font-weight:800; line-height:1; }
+  .scoreBarTrack { height:6px; background:#eef2f6; border-radius:3px; margin-top:12px; overflow:hidden; }
+  .scoreBarFill { height:100%; border-radius:3px; }
+  .scoreTag { font-size:12px; color:#64748b; margin-top:8px; }
+  .protected { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px 0; text-align:center; }
+
+  .panel { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:24px; margin-bottom:24px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { padding:8px 6px; color:#64748b; font-weight:600; border-bottom:1px solid #e2e8f0; text-align:center; }
+  th.store { padding:8px 12px; text-align:left; }
+  td.store { padding:8px 12px; font-weight:600; border-bottom:1px solid #eef2f6; color:#0f2e22; }
+  td.cell { padding:8px 6px; text-align:center; border-bottom:1px solid #eef2f6; font-variant-numeric:tabular-nums; color:#1f2d3d; }
+  .legend { display:flex; align-items:center; gap:8px; margin-top:14px; font-size:12px; color:#64748b; }
+  .legendBar { width:120px; height:8px; border-radius:4px; background:linear-gradient(90deg,#ef4444,#f59e0b,#00B388); }
+  .qLegend { margin-top:18px; border-top:1px solid #eef2f6; padding-top:16px; display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:8px 20px; }
+  .qLegendItem { display:flex; align-items:baseline; gap:8px; font-size:13px; line-height:1.5; }
+  .qLegendNum { flex:0 0 auto; font-weight:700; color:#00B388; min-width:30px; }
+  .qLegendCat { flex:0 0 auto; font-size:10px; color:#64748b; background:#f1f5f9; padding:1px 6px; border-radius:4px; }
+  .qLegendText { color:#334155; }
+  .revTag { font-size:9px; color:#b45309; background:#fef3c7; padding:1px 5px; border-radius:4px; margin-left:6px; }
+  .storeLegend { display:flex; flex-wrap:wrap; gap:6px 18px; margin-top:14px; justify-content:center; }
+  .sLeg { display:flex; align-items:center; gap:6px; font-size:12px; color:#52677d; }
+  .sLegDot { width:12px; height:12px; border-radius:3px; display:inline-block; }
+  .clickable { cursor:pointer; transition:transform .12s, box-shadow .12s; position:relative; }
+  .clickable:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,0.10); }
+  .cardHint { font-size:11px; color:#94a3b8; margin-top:10px; }
+  .modalOverlay { position:fixed; inset:0; background:rgba(15,46,34,0.45); display:flex; align-items:flex-start; justify-content:center; padding:40px 16px; z-index:100; overflow-y:auto; }
+  .modal { background:#fff; border-radius:16px; max-width:640px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.25); }
+  .modalHead { display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid #eef2f6; position:sticky; top:0; background:#fff; border-radius:16px 16px 0 0; }
+  .modalClose { background:#f1f5f9; border:none; width:32px; height:32px; border-radius:8px; font-size:16px; color:#64748b; }
+  .modalBody { padding:24px; }
+  .modalBody h3 { font-size:15px; margin-bottom:12px; color:#334155; }
+  .mTable { width:100%; border-collapse:collapse; font-size:13px; margin-top:12px; }
+  .mTable th { padding:8px 6px; color:#64748b; font-weight:600; border-bottom:1px solid #e2e8f0; text-align:center; }
+  .mTable th.store { text-align:left; padding-left:10px; }
+  .mTable td.store { padding:8px 10px; font-weight:600; border-bottom:1px solid #eef2f6; color:#0f2e22; }
+  .mTable td.cell { padding:8px 6px; text-align:center; border-bottom:1px solid #eef2f6; color:#1f2d3d; font-variant-numeric:tabular-nums; }
+  .assureGrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin:32px 0; }
+  .assureCard { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:22px 20px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+  .assureIcon { font-size:32px; margin-bottom:10px; }
+  .assureTitle { font-weight:700; font-size:15px; color:#0f2e22; margin-bottom:6px; }
+  .assureText { font-size:13px; color:#52677d; line-height:1.6; }
+  .quadBadge { display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:999px; margin-left:6px; letter-spacing:0.3px; }
+  .quadPanel h3 { display:flex; align-items:baseline; gap:14px; padding-bottom:14px; border-bottom:1px solid #0f172a; }
+  .panelSub { font-size:11px; font-weight:500; color:#64748b; letter-spacing:1.5px; font-family:'Space Grotesk','Inter',sans-serif; }
+  .quadChartWrap { border-radius:14px; padding:0; margin-top:4px; overflow:hidden; }
+  .quadSummary { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:24px; }
+  .quadCell { position:relative; background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:16px 18px; transition:transform .15s, box-shadow .15s; overflow:hidden; }
+  .quadCell::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--qc); }
+  .quadCell:hover { transform:translateY(-2px); box-shadow:0 4px 14px rgba(15,23,42,0.08); }
+  .quadHead { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .quadDot { width:10px; height:10px; border-radius:50%; box-shadow:0 0 0 3px color-mix(in srgb, var(--qc) 18%, transparent); }
+  .quadName { font-weight:700; font-size:14.5px; color:#0f172a; letter-spacing:0.5px; }
+  .quadCount { margin-left:auto; font-size:11px; color:#64748b; font-weight:600; background:#f1f5f9; padding:2px 8px; border-radius:10px; }
+  .quadDesc { font-size:11px; color:#94a3b8; margin-bottom:10px; letter-spacing:0.3px; }
+  .quadStores { font-size:13px; color:#1e293b; line-height:1.55; font-weight:500; }
+  .quadLayout { display:grid; grid-template-columns:1.5fr 1fr; gap:20px; align-items:start; margin-top:8px; }
+  @media(max-width:720px){ .quadLayout { grid-template-columns:1fr; } }
+  .quadStoreNav { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid #f1f5f9; }
+  .storeChip { background:#fff; color:#475569; border:1px solid #cbd5e1; padding:6px 14px; border-radius:4px; font-size:12.5px; font-weight:600; cursor:pointer; transition:all .15s; font-family:inherit; letter-spacing:0.5px; }
+  .storeChip:hover { background:#fff; border-color:#00B388; color:#00B388; }
+  .storeChip.active { background:#0f172a; color:#fff; border-color:#0f172a; }
+  .quadSide { display:flex; flex-direction:column; gap:18px; }
+  .focusCard { background:#fff; border:1px solid #0f172a; border-radius:0; padding:22px 24px; box-shadow:none; }
+  .focusLabel { font-size:10px; color:#94a3b8; letter-spacing:2.5px; font-weight:600; margin-bottom:8px; text-transform:uppercase; font-family:'Space Grotesk','Inter',sans-serif; }
+  .focusName { font-size:24px; font-weight:700; color:#0f172a; margin-bottom:14px; letter-spacing:0.5px; }
+  .focusQuad { font-size:14px; font-weight:700; padding:6px 12px; border-radius:0; background:rgba(0,179,136,0.08); border:1px solid #00B388; color:#00B388; display:inline-block; margin-bottom:20px; letter-spacing:1px; }
+  .focusQuadDesc { font-size:11px; color:#64748b; font-weight:500; margin-left:6px; letter-spacing:0; }
+  .focusMetrics { display:flex; gap:18px; padding-top:16px; border-top:1px solid #0f172a; }
+  .focusMetric { flex:1; }
+  .fmLabel { font-size:10px; color:#94a3b8; font-weight:600; letter-spacing:1.5px; margin-bottom:6px; text-transform:uppercase; font-family:'Space Grotesk','Inter',sans-serif; }
+  .fmValue { font-size:26px; font-weight:700; color:#0f172a; font-variant-numeric:tabular-nums; line-height:1; font-family:'Space Grotesk','Inter',sans-serif; letter-spacing:-1px; }
+  .distTitle { font-size:11px; color:#94a3b8; letter-spacing:2px; font-weight:600; text-transform:uppercase; padding-left:4px; }
+  .distList { display:flex; flex-direction:column; gap:8px; }
+  .distRow { display:grid; grid-template-columns:90px 1fr 40px; align-items:center; gap:10px; font-size:12.5px; color:#475569; }
+  .distName { font-weight:600; }
+  .distBar { background:#f1f5f9; height:6px; border-radius:3px; overflow:hidden; }
+  .distBarFill { display:block; height:100%; background:linear-gradient(90deg,#00B388,#3DDC97); border-radius:3px; transition:width .3s; }
+  .distCount { text-align:right; font-weight:600; color:#0f172a; font-variant-numeric:tabular-nums; }
+  .loginWrap { display:flex; justify-content:center; padding:60px 16px; }
+  .loginCard { background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:36px 32px; max-width:380px; width:100%; box-shadow:0 4px 12px rgba(0,0,0,0.06); }
+  .loginIcon { font-size:36px; text-align:center; margin-bottom:12px; }
+  .loginField { margin-bottom:14px; }
+  .loginField input { width:100%; padding:12px 14px; border:1px solid #cbd5e1; border-radius:10px; font-size:15px; font-family:inherit; color:#1f2d3d; background:#fff; }
+  .loginField input:focus { outline:2px solid #00B388; border-color:transparent; }
+  .loginErr { color:#dc2626; font-size:13px; text-align:center; margin-top:12px; min-height:18px; }
+  .logoutBtn { background:#fff; color:#64748b; border:1px solid #cbd5e1; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; }
+  .logoutBtn:hover { background:#f8fafc; }
+  /* 店舗管理 */
+  .storesPanel { display:flex; flex-direction:column; gap:20px; }
+  .storesHead { padding-bottom:20px; border-bottom:1px solid #e2e8f0; }
+  .storesAddBox { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:20px 22px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+  .storesAddLabel { font-size:12px; color:#64748b; font-weight:600; letter-spacing:0.5px; margin-bottom:10px; }
+  .storesAddRow { display:flex; gap:10px; }
+  .storeAddInput { flex:1; padding:11px 14px; border:1px solid #cbd5e1; border-radius:10px; font-size:14px; font-family:inherit; color:#1f2d3d; background:#fff; }
+  .storeAddInput:focus { outline:2px solid #00B388; border-color:transparent; }
+  .storesListLabel { font-size:11px; color:#94a3b8; letter-spacing:2px; font-weight:600; text-transform:uppercase; padding-left:4px; font-family:'Space Grotesk',Inter,sans-serif; }
+  .storesList { display:flex; flex-direction:column; gap:8px; }
+  .storeRow { display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:10px 14px; box-shadow:0 1px 3px rgba(0,0,0,0.03); }
+  .storeIdx { font-size:11px; color:#94a3b8; font-weight:700; min-width:24px; font-family:'Space Grotesk',Inter,sans-serif; letter-spacing:0.5px; }
+  .storeNameInput { flex:1; padding:8px 12px; border:1px solid transparent; border-radius:8px; font-size:14px; font-weight:600; color:#0f172a; background:transparent; font-family:inherit; }
+  .storeNameInput:hover { background:#f8fafc; }
+  .storeNameInput:focus { outline:2px solid #00B388; background:#fff; border-color:transparent; }
+  .storeStat { font-size:11px; color:#94a3b8; min-width:80px; text-align:right; }
+  .storeBtn { padding:6px 10px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; background:#f8fafc; border:1px solid #e2e8f0; color:#52677d; }
+  .storeBtn:hover:not(:disabled) { background:#fff; border-color:#0f172a; color:#0f172a; }
+  .storeBtn:disabled { opacity:0.3; cursor:not-allowed; }
+  .storeBtn.dangerBtn { color:#dc2626; border-color:#fee2e2; background:#fef2f2; }
+  .storeBtn.dangerBtn:hover { background:#fee2e2; border-color:#dc2626; color:#991b1b; }
+  .storesInfo { background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px 20px; font-size:12.5px; color:#64748b; line-height:1.7; margin-top:8px; }
+  .storesInfo strong { color:#0f172a; }
+  .storesInfo p { margin-top:4px; }
+  /* 合意度・ヒストグラム */
+  .agreeRow { display:flex; align-items:center; gap:8px; margin-top:8px; }
+  .agreeBadge { display:inline-block; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:6px; letter-spacing:0.3px; }
+  .agreeMetric { font-size:10.5px; color:#94a3b8; font-weight:600; font-family:'Space Grotesk',Inter,sans-serif; letter-spacing:0.3px; }
+  .miniHistWrap { margin-top:8px; }
+  .miniHist { width:100%; height:auto; display:block; max-width:140px; }
+  .agreeDetail { display:flex; flex-direction:column; gap:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:18px 20px; }
+  .agreeStats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding-bottom:14px; border-bottom:1px solid #e2e8f0; }
+  .agStat { text-align:center; }
+  .agLabel { font-size:10px; color:#94a3b8; letter-spacing:1.5px; font-weight:600; margin-bottom:6px; text-transform:uppercase; font-family:'Space Grotesk',Inter,sans-serif; }
+  .agValue { font-size:26px; font-weight:700; color:#0f172a; font-variant-numeric:tabular-nums; line-height:1; font-family:'Space Grotesk',Inter,sans-serif; letter-spacing:-1px; }
+  .agSub { font-size:11px; color:#64748b; margin-top:6px; font-weight:600; }
+  .agHistTitle { font-size:11px; color:#94a3b8; letter-spacing:1.5px; font-weight:600; margin-bottom:10px; text-transform:uppercase; font-family:'Space Grotesk',Inter,sans-serif; }
+  .agHistNote { font-size:11px; color:#64748b; margin-top:8px; line-height:1.6; }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="brandMark">◍</span>
+    <div>
+      <div class="brandName">はたらきやすさボイス</div>
+      <div class="brandSub">KINOWA Holdings</div>
+    </div>
+  </div>
+  <nav>
+    <button class="tab active" data-view="home">ホーム</button>
+    <button class="tab" data-view="survey">回答する</button>
+    <button class="tab" data-view="dashboard">結果を見る</button>
+    <button class="tab adminOnly hidden" data-view="stores">店舗管理</button>
+  </nav>
+  <div class="roleBox hidden" id="roleBox">
+    <select id="roleSelect">
+      <option value="admin">経営層(全店舗)</option>
+      <option value="manager">店舗管理者(自店のみ)</option>
+    </select>
+    <select id="managerStore" class="hidden"></select>
+  </div>
+</header>
+
+<main id="main"></main>
+<div id="modalHolder"></div>
+
+<footer>
+  完全匿名 · 個人が特定される情報は記録されません · 人事評価には使用しません
+</footer>
+
+<script>
+// 店舗一覧。追加・改名・削除はストレージに永続化。
+const DEFAULT_STORES = ["ケアの木","ほしの木","くりの木","お茶の木","はれの木","にじの木","ゆずの木","サン薬局"];
+let STORES;
+try {
+  const saved = JSON.parse(localStorage.getItem("ps_stores_v1") || "null");
+  STORES = Array.isArray(saved) && saved.length>0 ? saved : DEFAULT_STORES.slice();
+} catch(e){ STORES = DEFAULT_STORES.slice(); }
+function saveStores(){ localStorage.setItem("ps_stores_v1", JSON.stringify(STORES)); }
+const ROLES = ["薬剤師","医療事務","登録販売者・その他","管理薬剤師"];
+// 12項目: Edmondson 7項目 + 薬局現場向け 5項目。reverse=逆転項目。cat=カテゴリ
+// 19項目: 心理的安全性4因子(石井遼介)×3問=12 + 薬局現場補助4問 + 目標水準3問
+// axis: "safety"(縦軸:安全性) または "standard"(横軸:目標水準)
+const QUESTIONS = [
+  // ===== 心理的安全性: 話しやすさ =====
+  {id:"q1", cat:"話しやすさ", axis:"safety", text:"業務上の問題やリスクに気づいたとき、ためらわず声に出せる", reverse:false},
+  {id:"q2", cat:"話しやすさ", axis:"safety", text:"みんなが賛成している案にも、違和感があれば反対意見を言える", reverse:false},
+  {id:"q3", cat:"話しやすさ", axis:"safety", text:"上司や先輩に対しても、思ったことを率直に伝えられる", reverse:false},
+  // ===== 心理的安全性: 助け合い =====
+  {id:"q4", cat:"助け合い", axis:"safety", text:"困っているとき、声をかけてくれる仲間がいる", reverse:false},
+  {id:"q5", cat:"助け合い", axis:"safety", text:"忙しい仲間を見たとき、自然と手を貸し合える雰囲気がある", reverse:false},
+  {id:"q6", cat:"助け合い", axis:"safety", text:"ミスやトラブルが起きたとき、責めるより一緒に対処しようとする", reverse:false},
+  // ===== 心理的安全性: 挑戦 =====
+  {id:"q7", cat:"挑戦", axis:"safety", text:"失敗を恐れず、新しい方法を試すことが歓迎されている", reverse:false},
+  {id:"q8", cat:"挑戦", axis:"safety", text:"うまくいかなかった挑戦も、学びとして受け止められる", reverse:false},
+  {id:"q9", cat:"挑戦", axis:"safety", text:"前例のないアイデアでも、まず検討する空気がある", reverse:false},
+  // ===== 心理的安全性: 新奇歓迎 =====
+  {id:"q10", cat:"新奇歓迎", axis:"safety", text:"自分と違う考え方や個性を持つ人が、活躍できる職場だ", reverse:false},
+  {id:"q11", cat:"新奇歓迎", axis:"safety", text:"新しく入った人の意見も、対等に扱われる", reverse:false},
+  {id:"q12", cat:"新奇歓迎", axis:"safety", text:"これまでの慣習と違う提案でも、受け入れられる", reverse:false},
+  // ===== 薬局現場の補助項目 =====
+  {id:"q13", cat:"医療安全", axis:"safety", text:"調剤ミスやヒヤリハットを、隠さず安心して報告できる", reverse:false},
+  {id:"q14", cat:"質問・相談", axis:"safety", text:"わからないことを、遠慮なく先輩や同僚に質問できる", reverse:false},
+  {id:"q15", cat:"多職種連携", axis:"safety", text:"薬剤師・事務など職種を越えて、率直に意見を言い合える", reverse:false},
+  {id:"q16", cat:"業務負荷", axis:"safety", text:"業務量がつらいとき、無理せず上司や同僚に相談できる", reverse:false},
+  // ===== 目標水準(仕事の基準) =====
+  {id:"q17", cat:"目標水準", axis:"standard", text:"この店舗では、達成したい高い目標が共有されている", reverse:false},
+  {id:"q18", cat:"目標水準", axis:"standard", text:"この店舗では「これでいい」と現状維持に流れがちだ", reverse:true},
+  {id:"q19", cat:"目標水準", axis:"standard", text:"挑戦するより、無難な対応が優先される傾向がある", reverse:true},
+];
+const SCALE = [
+  {v:1,label:"全くそう思わない"},{v:2,label:"そう思わない"},{v:3,label:"ややそう思わない"},{v:4,label:"どちらでもない"},{v:5,label:"ややそう思う"},{v:6,label:"そう思う"},{v:7,label:"強くそう思う"}
+];
+const SMAX = 7; // 段階数
+const MIN_N = 4; // 集計保護のデフォルト推奨値(参考)
+let minN = 1;    // 実際に適用する最小人数。初期=制限なし。ダッシュボードで変更可
+const PERIODS = ["2025-Q3","2025-Q4","2026-Q1","2026-Q2"];
+
+// ===== Apps Script連携設定 =====
+// ↓↓↓ Apps ScriptのデプロイURL(...exec)をここに貼ってください ↓↓↓
+const API_URL = "https://script.google.com/macros/s/AKfycbweHoVM7B-Qvc8uBeHp0Xa3-NPJPwsO9TZ0Oz9M27abOeSK6vVpk3gGiKGx0djEKDhGiA/exec";
+// ↑↑↑ Apps ScriptのデプロイURL(...exec)をここに貼ってください ↑↑↑
+
+const USE_REMOTE = API_URL && !API_URL.startsWith("PASTE_");
+
+let responses = [];
+let dataLoading = false;
+let dataLoadError = null;
+
+// 起動時にAPI(設定済みなら)から読み込み。未設定ならlocalStorageから(プロトタイプ動作維持)
+async function loadResponses(){
+  if(!USE_REMOTE){
+    try { responses = JSON.parse(localStorage.getItem("ps_responses_v4") || "[]"); }
+    catch(e){ responses = []; }
+    return;
+  }
+  dataLoading = true; dataLoadError = null; render();
+  try {
+    const res = await fetch(API_URL, { method:"GET" });
+    const data = await res.json();
+    if(data.ok && Array.isArray(data.responses)){
+      responses = data.responses;
+    } else {
+      throw new Error(data.error || "unknown");
+    }
+  } catch(err){
+    dataLoadError = String(err);
+    responses = [];
+  } finally {
+    dataLoading = false;
+    render();
+  }
+}
+// 末尾で起動時呼び出し
+
+// ===== サンプルデータ生成(デモ用) =====
+function seedSampleData(){
+  // safe=安全性の地力(1-7), std=目標水準の地力(1-7), trend=四半期増減, n=各期人数
+  const profiles = {
+    "ケアの木":{safe:6.0, std:5.8, trend:0.15,  n:9},   // 挑戦的(高×高)
+    "ほしの木":{safe:5.6, std:5.4, trend:0.10,  n:7},   // 挑戦的寄り
+    "くりの木":{safe:5.5, std:3.4, trend:0.05,  n:8},   // ぬるい(高×低)
+    "お茶の木":{safe:3.4, std:5.6, trend:-0.10, n:6},   // きつい(低×高)
+    "はれの木":{safe:3.0, std:3.2, trend:0.20,  n:7},   // 事なかれ主義(低×低)から改善中
+    "にじの木":{safe:4.2, std:4.4, trend:0.0,   n:5},   // 境界・横ばい
+    "ゆずの木":{safe:5.8, std:5.2, trend:0.08,  n:10},  // 挑戦的
+    "サン薬局":{safe:4.8, std:4.0, trend:0.10,  n:3},   // 小規模
+  };
+  function randn(){ let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+  function clamp(x){ return Math.max(1, Math.min(SMAX, Math.round(x))); }
+  const out = [];
+  STORES.forEach(store=>{
+    const p = profiles[store];
+    PERIODS.forEach((period, pi)=>{
+      const safeCenter = p.safe + p.trend*pi;
+      const stdCenter  = p.std;  // 目標水準は店舗の地力としてほぼ固定
+      for(let i=0;i<p.n;i++){
+        const personBias = randn()*0.5;
+        const answers = {};
+        QUESTIONS.forEach(q=>{
+          const center = q.axis==="safety" ? safeCenter : stdCenter;
+          const feel = clamp(center + personBias + randn()*0.7);
+          answers[q.id] = q.reverse ? (SMAX+1 - feel) : feel;
+        });
+        const rec = { store, period, role: ROLES[Math.floor(Math.random()*ROLES.length)], answers, score:0, standard:0, ts: Date.now()-(3-pi)*90*86400000+i*3600000 };
+        rec.score = responseToScore(answers);
+        rec.standard = responseToStandard(answers);
+        out.push(rec);
+      }
+    });
+  });
+  return out;
+}
+// HTMLエスケープ(API URL等の表示用)
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
+}
+
+// 全体保存(ローカル用途・サンプル投入/リセット時)
+function save(){
+  if(!USE_REMOTE){
+    localStorage.setItem("ps_responses_v4", JSON.stringify(responses));
+  }
+  // リモート使用時の全体保存は対応しない(個別POSTで反映)
+}
+// 1件の回答をAPIに送信(リモート使用時のみ)
+async function submitResponse(rec){
+  if(!USE_REMOTE){
+    responses.push(rec); save(); return true;
+  }
+  try {
+    const res = await fetch(API_URL, {
+      method:"POST",
+      body: JSON.stringify(rec),
+      // CORS回避のためContent-Typeはあえて指定しない(text/plain扱いになりプリフライト回避)
+    });
+    const data = await res.json();
+    if(data.ok){
+      // 送信成功後、再取得してUIに反映
+      await loadResponses();
+      return true;
+    }
+    alert("送信に失敗しました: " + (data.error||"unknown"));
+    return false;
+  } catch(err){
+    alert("送信に失敗しました: " + String(err));
+    return false;
+  }
+}
+
+let view = "home";
+let role = "admin";
+let managerStore = STORES[0];
+let dashPeriod = PERIODS[PERIODS.length-1];
+let quadStoreSel = STORES[0]; // 4象限マップで表示する店舗
+// ===== 管理者認証 =====
+// 注意: クライアント側パスワードは正式なセキュリティではなく「誤閲覧の防止」用途。
+// 本番運用版ではサーバー側で認証を実装すること。
+const ADMIN_PASSWORD = "kinowa2026"; // ★本番前に変更
+let isAdminMode = false; // セッション内のみ。リロードで失われる(=ログイン保持しない)
+
+// 軸別スコア算出(0-100)。axisで対象問のみ集計
+function scoreOnAxis(answers, axis){
+  const qs = QUESTIONS.filter(q=>q.axis===axis);
+  let sum = 0;
+  for(const q of qs){ const raw = answers[q.id]; sum += q.reverse ? ((SMAX+1)-raw) : raw; }
+  const n = qs.length;
+  return ((sum - n)/(n*SMAX - n))*100;
+}
+function responseToScore(answers){ return scoreOnAxis(answers, "safety"); } // 主スコアは安全性
+function responseToStandard(answers){ return scoreOnAxis(answers, "standard"); }
+// 4象限判定(石井遼介マトリクス) safe=縦軸, std=横軸, しきい値=50
+function quadrant(safe, std){
+  if(safe===null || std===null) return null;
+  if(safe>=50 && std>=50) return {key:"wakuwaku", name:"挑戦的", desc:"目標高・安全性高(理想)", color:"#00B388"};
+  if(safe>=50 && std<50)  return {key:"nurui",    name:"ぬるい",   desc:"目標低・安全性高",       color:"#64748b"};
+  if(safe<50  && std>=50) return {key:"kitsui",   name:"きつい",   desc:"目標高・安全性低",       color:"#64748b"};
+  return                          {key:"kotonakare", name:"事なかれ主義", desc:"目標低・安全性低", color:"#94a3b8"};
+}
+function scoreColor(v){ if(v>=70)return "#00B388"; if(v>=50)return "#d97706"; return "#dc2626"; }
+function scoreLabel(v){ if(v>=70)return "良好"; if(v>=50)return "要観察"; return "要介入"; }
+
+// ===== 合意度評価 =====
+// 与えられた数値配列(逆転処理済の1〜7点値)から SD と rWG(James-Demaree合意度) を返す
+function agreementStats(values){
+  if(!values || values.length<2) return null;
+  const n = values.length;
+  const mean = values.reduce((a,b)=>a+b,0)/n;
+  const variance = values.reduce((a,b)=>a+(b-mean)*(b-mean),0)/n; // 母分散
+  const sd = Math.sqrt(variance);
+  // 7段階尺度の理論最大分散 = (A^2 - 1) / 12,  A=7 → 4.0
+  const maxVar = (SMAX*SMAX - 1) / 12;
+  let rwg = 1 - (variance / maxVar);
+  if(rwg < 0) rwg = 0; // 負値は0に丸める(James-Demareeの慣行)
+  if(rwg > 1) rwg = 1;
+  return { sd, rwg, mean, n };
+}
+function agreementLabel(rwg){
+  if(rwg===null||rwg===undefined) return {text:"—", color:"#94a3b8", level:"none"};
+  if(rwg >= 0.7) return {text:"合意◎", color:"#00B388", level:"high"};
+  if(rwg >= 0.5) return {text:"中程度", color:"#d97706", level:"mid"};
+  return {text:"意見割れ", color:"#dc2626", level:"low"};
+}
+// 1店舗の全回答(複数項目×複数人)から、各人の総合スコア(0-100)の合意度を計算
+function storeAgreement(recs){
+  if(!recs || recs.length<2) return null;
+  // 各回答者の安全性スコア(0-100)をそのまま使ってSDを出すと、尺度がブレるので
+  // 「各人の安全性軸の平均(1-7)」を使って合意度を計算する
+  const safetyQs = QUESTIONS.filter(q=>q.axis==="safety");
+  const perPerson = recs.map(r=>{
+    let sum=0;
+    for(const q of safetyQs){ const raw=r.answers[q.id]; sum += q.reverse ? (SMAX+1-raw) : raw; }
+    return sum/safetyQs.length; // この人の1-7点での平均
+  });
+  return agreementStats(perPerson);
+}
+// 各設問ごとの回答分布(1〜7点それぞれの人数) -- 逆転処理済
+function questionDistribution(recs, q){
+  const dist = new Array(SMAX).fill(0);
+  recs.forEach(r=>{
+    const raw = r.answers[q.id];
+    const v = q.reverse ? (SMAX+1-raw) : raw;
+    if(v>=1 && v<=SMAX) dist[v-1]++;
+  });
+  return dist;
+}
+// 店舗の総合スコア分布(各人の1-7点平均をビン化)
+function storeScoreDistribution(recs){
+  if(!recs || recs.length===0) return new Array(SMAX).fill(0);
+  const safetyQs = QUESTIONS.filter(q=>q.axis==="safety");
+  const dist = new Array(SMAX).fill(0);
+  recs.forEach(r=>{
+    let sum=0;
+    for(const q of safetyQs){ const raw=r.answers[q.id]; sum += q.reverse ? (SMAX+1-raw) : raw; }
+    const avg = sum/safetyQs.length;
+    const bin = Math.max(0, Math.min(SMAX-1, Math.round(avg)-1));
+    dist[bin]++;
+  });
+  return dist;
+}
+function cellColor(v){
+  if(v===null) return "#f8fafc";
+  const t=(v-1)/(SMAX-1);
+  const r=Math.round(239-t*(239-31)), g=Math.round(68+t*(157-68)), b=Math.round(68+t*(107-68));
+  return `rgba(${r},${g},${b},0.16)`;
+}
+
+document.querySelectorAll(".tab").forEach(btn=>{ btn.addEventListener("click",()=>{ view=btn.dataset.view; render(); }); });
+document.getElementById("roleSelect").addEventListener("change",e=>{ role=e.target.value; render(); });
+document.getElementById("managerStore").addEventListener("change",e=>{ managerStore=e.target.value; render(); });
+
+function render(){
+  document.querySelectorAll(".tab").forEach(b=> b.classList.toggle("active", b.dataset.view===view));
+  // 管理者専用タブの表示切替
+  document.querySelectorAll(".adminOnly").forEach(el=> el.classList.toggle("hidden", !isAdminMode));
+  const roleBox = document.getElementById("roleBox");
+  const mStore = document.getElementById("managerStore");
+  const showRoleBox = view==="dashboard" && isAdminMode;
+  if(showRoleBox){ roleBox.classList.remove("hidden"); } else { roleBox.classList.add("hidden"); }
+  // 店舗セレクタは描画毎に最新化(店舗追加・改名・削除に追従)
+  mStore.innerHTML = STORES.map(s=>`<option value="${s}" ${managerStore===s?"selected":""}>${s}</option>`).join("");
+  mStore.classList.toggle("hidden", role!=="manager");
+  const main = document.getElementById("main");
+  if(view==="home") main.innerHTML = homeHtml();
+  else if(view==="survey") main.innerHTML = surveyHtml();
+  else if(view==="dashboard" && !isAdminMode) main.innerHTML = loginHtml();
+  else if(view==="dashboard") main.innerHTML = dashboardHtml();
+  else if(view==="stores" && !isAdminMode) main.innerHTML = loginHtml();
+  else if(view==="stores") main.innerHTML = storesHtml();
+  else main.innerHTML = dashboardHtml();
+  bindEvents();
+}
+
+function loginHtml(){
+  return `<div class="loginWrap">
+    <div class="loginCard">
+      <div class="loginIcon">🔒</div>
+      <h2 style="margin:0 0 8px;text-align:center">結果閲覧 ログイン</h2>
+      <p style="color:#64748b;font-size:13px;text-align:center;margin:0 0 24px;line-height:1.6">このページは管理者専用です。<br>パスワードを入力してください。</p>
+      <div class="loginField">
+        <input type="password" id="pwInput" placeholder="パスワード" autocomplete="off" autofocus />
+      </div>
+      <button class="primaryBtn" id="loginBtn" style="width:100%">ログイン</button>
+      <div id="loginErr" class="loginErr"></div>
+      <p style="color:#94a3b8;font-size:11px;text-align:center;margin-top:24px;line-height:1.6">ページを閉じるとログアウトされます。<br>毎回パスワードの入力が必要です。</p>
+    </div>
+  </div>`;
+}
+
+// ===== 店舗管理ビュー =====
+function storesHtml(){
+  const rows = STORES.map((name, idx)=>{
+    const respCount = responses.filter(r=>r.store===name).length;
+    return `<div class="storeRow" data-store="${name}">
+      <span class="storeIdx">${String(idx+1).padStart(2,"0")}</span>
+      <input class="storeNameInput" value="${name}" data-orig="${name}" />
+      <span class="storeStat">${respCount}件の回答</span>
+      <button class="storeBtn upBtn" data-idx="${idx}" ${idx===0?"disabled":""} title="上へ">↑</button>
+      <button class="storeBtn downBtn" data-idx="${idx}" ${idx===STORES.length-1?"disabled":""} title="下へ">↓</button>
+      <button class="storeBtn dangerBtn" data-store="${name}" title="削除">削除</button>
+    </div>`;
+  }).join("");
+  return `<div class="storesPanel">
+    <div class="storesHead">
+      <h2 style="margin:0">店舗管理</h2>
+      <p style="color:#64748b;font-size:13px;margin-top:6px;line-height:1.7">店舗の追加・名前変更・並び替え・削除ができます。<br>名前を変更すると、その店舗の過去回答も自動的に新しい名前へ更新されます。</p>
+    </div>
+
+    <div class="storesAddBox">
+      <div class="storesAddLabel">新しい店舗を追加</div>
+      <div class="storesAddRow">
+        <input class="storeAddInput" id="newStoreInput" placeholder="例: みどりの木" />
+        <button class="primaryBtn" id="addStoreBtn">追加</button>
+      </div>
+    </div>
+
+    <div class="storesListLabel">登録店舗 (${STORES.length}店)</div>
+    <div class="storesList">${rows}</div>
+
+    <div class="storesInfo">
+      <strong>変更を保存する操作</strong>
+      <p>名前変更は入力欄からフォーカスが外れた時(Tabキー / 他の場所をクリック)に自動保存されます。Enterキーでも確定できます。並び替えと削除はその場で反映されます。</p>
+    </div>
+  </div>`;
+}
+
+// 名前変更: 過去回答の店舗名も一括更新
+function renameStore(oldName, newName){
+  newName = newName.trim();
+  if(!newName || newName===oldName) return false;
+  if(STORES.includes(newName)){ alert(`「${newName}」はすでに存在します`); return false; }
+  const idx = STORES.indexOf(oldName);
+  if(idx<0) return false;
+  STORES[idx] = newName;
+  saveStores();
+  // 過去回答の店舗名も差し替え
+  responses.forEach(r=>{ if(r.store===oldName) r.store = newName; });
+  save();
+  // 状態変数の追従
+  if(managerStore===oldName) managerStore = newName;
+  if(quadStoreSel===oldName) quadStoreSel = newName;
+  return true;
+}
+function addStore(name){
+  name = name.trim();
+  if(!name) return false;
+  if(STORES.includes(name)){ alert(`「${name}」はすでに存在します`); return false; }
+  STORES.push(name);
+  saveStores();
+  return true;
+}
+function deleteStore(name){
+  const respCount = responses.filter(r=>r.store===name).length;
+  let msg = `店舗「${name}」を削除しますか？`;
+  if(respCount>0){
+    msg += `\n\n⚠️ この店舗には ${respCount}件の過去回答があります。`;
+    msg += `\n\n[OK] = 店舗のみ削除(過去回答は残す)`;
+    msg += `\n[キャンセル] = 削除をやめる`;
+    if(!confirm(msg)) return false;
+    // 過去回答も消すか追加確認
+    if(confirm(`過去の${respCount}件の回答データも一緒に削除しますか？\n\n[OK] = 回答データも完全削除(取り消し不可)\n[キャンセル] = 回答データは残す`)){
+      responses = responses.filter(r=>r.store!==name);
+      save();
+    }
+  } else {
+    if(!confirm(msg)) return false;
+  }
+  STORES = STORES.filter(s=>s!==name);
+  saveStores();
+  // 状態変数の追従
+  if(managerStore===name) managerStore = STORES[0] || "";
+  if(quadStoreSel===name) quadStoreSel = STORES[0] || "";
+  return true;
+}
+function moveStore(idx, delta){
+  const j = idx + delta;
+  if(j<0 || j>=STORES.length) return;
+  [STORES[idx], STORES[j]] = [STORES[j], STORES[idx]];
+  saveStores();
+}
+
+function homeHtml(){
+  // API接続状況(管理者にだけ表示)
+  const apiStatus = isAdminMode ? (
+    USE_REMOTE
+      ? `<div class="note" style="margin-top:16px;border-color:#bbf7d0;background:#f0fdf4">
+          <strong>🔗 サーバー連携: 有効</strong>
+          <p>Google Apps Script (${escapeHtml(API_URL.slice(0,40))}…) に接続中。すべての店舗のPCから入力した回答が、このダッシュボードに集約されます。${dataLoadError?`<br><span style="color:#dc2626">エラー: ${escapeHtml(dataLoadError)}</span>`:""}</p>
+        </div>`
+      : `<div class="note" style="margin-top:16px;border-color:#fecaca;background:#fef2f2">
+          <strong>⚠️ サーバー連携: 未設定</strong>
+          <p>現在は <strong>このブラウザ内のみ</strong>でデータが保存されます(他の端末とは共有されません)。<br>各店舗PCから回答を集める運用には、HTMLファイル内の <code>API_URL</code> にApps Script URLを設定してください。詳細はセットアップ手順書(SETUP.md)を参照。</p>
+        </div>`
+  ) : "";
+
+  // サンプル投入はローカルモード時のみ(リモート連携時はサーバーデータを汚すため非表示)
+  const sampleBlock = (isAdminMode && !USE_REMOTE) ? `
+    <div class="note" style="margin-top:16px;border-color:#fde68a;background:#fffbeb">
+      <strong>🧪 デモ用サンプルデータ</strong>
+      <p>実際に8店舗・4四半期分の回答が入った状態でダッシュボードを確認できます。本番では使わない機能です。</p>
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+        <button class="primaryBtn" id="seedBtn">サンプルデータを投入して結果を見る</button>
+        <button class="ghostBtn" id="resetBtn">データを全消去</button>
+      </div>
+    </div>` : "";
+
+  const adminBlock = isAdminMode ? `
+    ${apiStatus}
+    <div class="note" style="margin-top:16px;border-color:#cbd5e1;background:#f8fafc">
+      <strong>🔒 管理者向け情報</strong>
+      <p>学術的に検証された心理的安全性の7項目尺度(Edmondson, 1999)を土台に、薬局現場で重要な5観点(医療安全・相談・運営参画・多職種連携・業務負荷)を加えた計${QUESTIONS.length}項目で測定しています。設問は固定で同じ物差しによる経時比較が可能。回答者が少ない店舗は個人特定を防ぐためダッシュボード上で「表示する最小回答数」を設定できます。</p>
+    </div>
+    ${sampleBlock}` : "";
+
+  return `
+    <div class="hero">
+      <h1>あなたの声を、<br>職場づくりに活かします</h1>
+      <p class="lead">日々の働きやすさについて、率直に教えてください。みなさんの声は、より働きやすい職場をつくるための材料として活用されます。</p>
+      <div class="heroBtns">
+        <button class="primaryBtn" data-go="survey">アンケートに回答する(約5分)</button>
+      </div>
+    </div>
+
+    <div class="assureGrid">
+      <div class="assureCard">
+        <div class="assureIcon">🛡️</div>
+        <div class="assureTitle">完全匿名</div>
+        <div class="assureText">名前・端末などは一切記録されません。誰が何を答えたかは分かりません。</div>
+      </div>
+      <div class="assureCard">
+        <div class="assureIcon">🚫</div>
+        <div class="assureTitle">人事評価には使いません</div>
+        <div class="assureText">回答内容が査定・昇給・配属に影響することは一切ありません。</div>
+      </div>
+      <div class="assureCard">
+        <div class="assureIcon">🌱</div>
+        <div class="assureTitle">職場改善のためだけに</div>
+        <div class="assureText">集まった声は、店舗単位の改善アクションを考えるためにのみ使います。</div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>このアンケートについて</strong>
+      <p>同じ${QUESTIONS.length}項目のアンケートで「働きやすさ」を継続的に見える化しています。職場の雰囲気・相談しやすさ・業務量などについて${QUESTIONS.length}項目、回答時間は約5分です。回答は店舗ごとに集計され、個人が分かる形では使われません。率直な回答こそが、職場を良くするいちばん大切な材料です。</p>
+    </div>
+    ${adminBlock}`;
+}
+
+let surveyState = { store:"", roleSel:"", period:PERIODS[PERIODS.length-1], answers:{}, done:false };
+function surveyHtml(){
+  if(surveyState.done){
+    return `<div class="thanks">
+      <div class="checkMark">✓</div>
+      <h2 style="margin-bottom:8px">回答ありがとうございました</h2>
+      <p style="color:#52677d;max-width:440px;line-height:1.7">あなたの回答は匿名で記録されました。この声が職場改善に使われます。</p>
+      <div style="display:flex;gap:12px;margin-top:24px">
+        <button class="primaryBtn" id="again">別の回答を入力</button>
+        <button class="ghostBtn" data-go="home">ホームに戻る</button>
+      </div>
+    </div>`;
+  }
+  const answered = QUESTIONS.filter(q=>surveyState.answers[q.id]).length;
+  const canSubmit = surveyState.store && answered===QUESTIONS.length;
+  const qHtml = QUESTIONS.map((q,i)=>{
+    return `
+      <div class="qCard">
+        <div class="qNum">Q${i+1}</div>
+        <div class="qText">${q.text}</div>
+        <div class="scaleRow">${SCALE.map(s=>`
+          <button class="scaleBtn ${surveyState.answers[q.id]===s.v?"active":""}" data-q="${q.id}" data-v="${s.v}">
+            <span class="scaleNum">${s.v}</span><span class="scaleLbl">${s.label}</span>
+          </button>`).join("")}</div>
+      </div>`;
+  }).join("");
+  return `
+    <h2>はたらきやすさアンケート</h2>
+    <p style="color:#52677d;font-size:14px;line-height:1.7;margin-bottom:8px">このアンケートは<strong>完全匿名</strong>で、人事評価には一切使われません。みなさんの率直な声が、職場をより良くする手がかりになります。</p>
+    <div class="metaRow">
+      <label class="field"><span class="fieldLabel">所属店舗 <span class="req">*</span></span>
+        <select id="svStore"><option value="">選択してください</option>${STORES.map(s=>`<option value="${s}" ${surveyState.store===s?"selected":""}>${s}</option>`).join("")}</select>
+      </label>
+      <label class="field"><span class="fieldLabel">職種(任意)</span>
+        <select id="svRole"><option value="">無回答</option>${ROLES.map(r=>`<option value="${r}" ${surveyState.roleSel===r?"selected":""}>${r}</option>`).join("")}</select>
+      </label>
+      <label class="field"><span class="fieldLabel">対象期間</span>
+        <select id="svPeriod">${PERIODS.map(p=>`<option value="${p}" ${surveyState.period===p?"selected":""}>${p}</option>`).join("")}</select>
+      </label>
+    </div>
+    <div>${qHtml}</div>
+    <div class="submitRow">
+      <span style="color:#94a3b8;font-size:14px">${answered} / ${QUESTIONS.length} 項目回答済み</span>
+      <button class="${canSubmit?"primaryBtn":"disabledBtn"}" id="submitBtn" ${canSubmit?"":"disabled"}>回答を送信</button>
+    </div>`;
+}
+function catName(c){
+  return {
+    "話しやすさ":"■ 話しやすさ",
+    "助け合い":"■ 助け合い",
+    "挑戦":"■ 挑戦",
+    "新奇歓迎":"■ 新奇歓迎",
+    "医療安全":"■ 医療安全",
+    "質問・相談":"■ 質問・相談",
+    "多職種連携":"■ 多職種の連携",
+    "業務負荷":"■ 業務量・負担",
+    "目標水準":"■ この店舗の目標水準"
+  }[c] || c;
+}
+
+function dashboardHtml(){
+  const visibleStores = role==="manager" ? [managerStore] : STORES;
+  const byKey = {};
+  responses.forEach(r=>{ const k=r.store+"__"+r.period; (byKey[k]=byKey[k]||[]).push(r); });
+
+  const storeScores = visibleStores.map(store=>{
+    const recs = byKey[store+"__"+dashPeriod] || [];
+    const n = recs.length;
+    const prot = n < minN;
+    const avg = n ? recs.reduce((a,r)=>a+r.score,0)/n : null;
+    const std = n ? recs.reduce((a,r)=>a+(r.standard!==undefined?r.standard:responseToStandard(r.answers)),0)/n : null;
+    const quad = (!prot && avg!==null && std!==null) ? quadrant(avg, std) : null;
+    const perQ = QUESTIONS.map(q=>{
+      if(!n) return null;
+      const vals = recs.map(r=> q.reverse ? (SMAX+1)-r.answers[q.id] : r.answers[q.id]);
+      return vals.reduce((a,b)=>a+b,0)/vals.length;
+    });
+    const agree = (!prot && n>=2) ? storeAgreement(recs) : null;
+    const scoreDist = (!prot) ? storeScoreDistribution(recs) : null;
+    return {store,n,prot,avg,std,quad,perQ,agree,scoreDist};
+  });
+
+  const head = `<div class="dashHead">
+    <h2>${role==="manager" ? managerStore+" の結果" : "全店舗ダッシュボード"}</h2>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span style="font-size:12px;color:#64748b">表示する最小回答数</span>
+      <select id="minNSelect">
+        <option value="1" ${minN===1?"selected":""}>制限なし(n≥1)</option>
+        <option value="2" ${minN===2?"selected":""}>n≥2</option>
+        <option value="3" ${minN===3?"selected":""}>n≥3</option>
+        <option value="4" ${minN===4?"selected":""}>n≥4(推奨)</option>
+      </select>
+      <select id="dashPeriod">${PERIODS.map(p=>`<option value="${p}" ${dashPeriod===p?"selected":""}>${p}</option>`).join("")}</select>
+      <button class="logoutBtn" id="logoutBtn" title="ログアウト">ログアウト</button>
+    </div>
+  </div>`;
+
+  if(responses.length===0){
+    return head + `<div class="empty">まだ回答がありません。「回答する」からデータを入力すると、ここに集計が表示されます。</div>`;
+  }
+
+  function miniHistogram(dist, color){
+    if(!dist) return "";
+    const max = Math.max(...dist, 1);
+    const W=120, H=28, bw=W/SMAX;
+    const bars = dist.map((v,i)=>{
+      const h = v/max * H;
+      return `<rect x="${i*bw+1}" y="${H-h}" width="${bw-2}" height="${h}" fill="${color}" opacity="${v===0?0.15:0.85}" rx="1"/>`;
+    }).join("");
+    return `<svg viewBox="0 0 ${W} ${H}" class="miniHist">${bars}</svg>`;
+  }
+  const cards = `<div class="cardGrid">${storeScores.map(s=>{
+    const ag = s.agree ? agreementLabel(s.agree.rwg) : null;
+    const histColor = s.avg!==null ? scoreColor(s.avg) : "#94a3b8";
+    return `<div class="scoreCard clickable" data-store="${s.store}">
+      <div class="scoreCardTop"><span class="storeName">${s.store}</span><span class="nBadge">n=${s.n}</span></div>
+      ${s.prot ? `<div class="protected"><div style="font-size:28px;margin-bottom:4px">🔒</div><div style="font-size:13px;color:#94a3b8;line-height:1.5">回答${minN}件未満のため<br>特定防止により非表示</div></div>`
+      : `<div class="bigScore" style="color:${scoreColor(s.avg)}">${s.avg.toFixed(1)}</div>
+         <div class="scoreBarTrack"><div class="scoreBarFill" style="width:${s.avg}%;background:${scoreColor(s.avg)}"></div></div>
+         <div class="scoreTag">${scoreLabel(s.avg)} ${s.quad?`<span class="quadBadge" style="background:${s.quad.color}20;color:${s.quad.color};border:1px solid ${s.quad.color}40">${s.quad.name}</span>`:""}</div>
+         ${ag ? `<div class="agreeRow">
+           <span class="agreeBadge" style="background:${ag.color}18;color:${ag.color};border:1px solid ${ag.color}40">${ag.text}</span>
+           <span class="agreeMetric" title="標準偏差(小さいほど意見一致)">SD ${s.agree.sd.toFixed(2)}</span>
+         </div>
+         <div class="miniHistWrap" title="回答分布(1〜7点)">${miniHistogram(s.scoreDist, histColor)}</div>` : ""}`}
+      <div class="cardHint">クリックで過去の記録 ›</div>
+    </div>`;
+  }).join("")}</div>`;
+
+  // ===== 4象限マトリクス(石井遼介) =====
+  // 1店舗ずつ切り替え表示。店舗管理者ビューは自店固定。
+  const allPlotable = STORES.map(store=>{
+    const recs = byKey[store+"__"+dashPeriod] || [];
+    const n = recs.length;
+    if(n < minN || n === 0) return null;
+    const avg = recs.reduce((a,r)=>a+r.score,0)/n;
+    const std = recs.reduce((a,r)=>a+(r.standard!==undefined?r.standard:responseToStandard(r.answers)),0)/n;
+    return { store, n, avg, std, quad: quadrant(avg, std) };
+  }).filter(x=>x);
+  const focusStore = role==="manager" ? managerStore : quadStoreSel;
+  const focus = allPlotable.find(s=>s.store===focusStore) || null;
+  const QW=640, QH=520, qpad=64;
+  const qx = v => qpad + (v/100)*(QW-qpad*2);
+  const qy = v => (QH-qpad) - (v/100)*(QH-qpad*2);
+  // スイス・タイポグラフィ: 大きな番号、硬質な黒枠線、bio greenはアクセントのみ
+  const qDefs = `<defs>
+    <filter id="dotShadow" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.20"/></filter>
+    <filter id="dotGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>`;
+  const canvas = `<rect x="0" y="0" width="${QW}" height="${QH}" fill="#fff"/>`;
+  const W2 = qx(50)-qpad, H2 = qy(50)-qpad;
+  // 4象限。選択店舗のいる象限だけ極淡くハイライト
+  const focusKey = focus ? focus.quad.key : null;
+  const quadCells = [
+    {key:"nurui",      x:qpad,    y:qpad,    num:"01", name:"ぬるい"},
+    {key:"wakuwaku",   x:qx(50),  y:qpad,    num:"02", name:"挑戦的"},
+    {key:"kotonakare", x:qpad,    y:qy(50),  num:"03", name:"事なかれ主義"},
+    {key:"kitsui",     x:qx(50),  y:qy(50),  num:"04", name:"きつい"},
+  ];
+  const qBg = quadCells.map(c=>{
+    const isActive = c.key===focusKey;
+    const isIdeal  = c.key==="wakuwaku";
+    const bgFill = isActive ? "#00B388" : (isIdeal ? "#00B388" : "#94a3b8");
+    const bgOp   = isActive ? "0.06" : "0";
+    return `<rect x="${c.x}" y="${c.y}" width="${W2}" height="${H2}" fill="${bgFill}" opacity="${bgOp}"/>`;
+  }).join("");
+  // 各象限の番号と名前
+  const qLabels = quadCells.map(c=>{
+    const isActive = c.key===focusKey;
+    const isIdeal  = c.key==="wakuwaku";
+    const numColor  = isActive ? "#00B388" : (isIdeal ? "#00B388" : "#e2e8f0");
+    const numOpacity = isActive ? "0.95" : (isIdeal ? "0.40" : "1");
+    const nameColor  = isActive ? "#00B388" : (isIdeal ? "#00B388" : "#94a3b8");
+    const nameWeight = isActive || isIdeal ? "700" : "600";
+    return `
+      <text x="${c.x+15}" y="${c.y+44}" font-size="38" fill="${numColor}" font-weight="700" font-family="'Space Grotesk',Inter,sans-serif" opacity="${numOpacity}" letter-spacing="-1">${c.num}</text>
+      <text x="${c.x+15}" y="${c.y+58}" font-size="10" fill="${nameColor}" letter-spacing="2.5" font-weight="${nameWeight}">${c.name}</text>`;
+  }).join("");
+  // 黒枠線・中央十字(硬質)
+  const qAxes = `
+    <rect x="${qpad}" y="${qpad}" width="${QW-qpad*2}" height="${QH-qpad*2}" fill="none" stroke="#0f172a" stroke-width="1"/>
+    <line x1="${qpad}" y1="${qy(50)}" x2="${QW-qpad}" y2="${qy(50)}" stroke="#0f172a" stroke-width="0.6"/>
+    <line x1="${qx(50)}" y1="${qpad}" x2="${qx(50)}" y2="${QH-qpad}" stroke="#0f172a" stroke-width="0.6"/>`;
+  // 微細グリッドは省く(スイス・スタイルは余白で見せる)
+  const microGrid = "";
+  // 軸ラベル
+  const qAxisLabels = `
+    <text x="${qpad-8}" y="${qpad-12}" font-size="9" fill="#0f172a" letter-spacing="2.5" font-weight="600" font-family="'Space Grotesk',Inter,sans-serif">SAFETY  ↑</text>
+    <text x="${QW-qpad}" y="${QH-qpad+22}" font-size="9" fill="#0f172a" text-anchor="end" letter-spacing="2.5" font-weight="600" font-family="'Space Grotesk',Inter,sans-serif">STANDARD  →</text>
+    <text x="${qpad-12}" y="${qy(0)+3}" font-size="9" fill="#94a3b8" text-anchor="end" font-family="'Space Grotesk',Inter,sans-serif">0</text>
+    <text x="${qpad-12}" y="${qy(50)+3}" font-size="9" fill="#94a3b8" text-anchor="end" font-family="'Space Grotesk',Inter,sans-serif">50</text>
+    <text x="${qpad-12}" y="${qy(100)+3}" font-size="9" fill="#94a3b8" text-anchor="end" font-family="'Space Grotesk',Inter,sans-serif">100</text>
+    <text x="${qx(0)}" y="${QH-qpad+18}" font-size="9" fill="#94a3b8" text-anchor="middle" font-family="'Space Grotesk',Inter,sans-serif">0</text>
+    <text x="${qx(50)}" y="${QH-qpad+18}" font-size="9" fill="#94a3b8" text-anchor="middle" font-family="'Space Grotesk',Inter,sans-serif">50</text>
+    <text x="${qx(100)}" y="${QH-qpad+18}" font-size="9" fill="#94a3b8" text-anchor="middle" font-family="'Space Grotesk',Inter,sans-serif">100</text>`;
+  // ドット(スイス・スタイル: シンプルな円 + 引き出し線)
+  let qDots = "";
+  if(focus){
+    const cx=qx(focus.std), cy=qy(focus.avg);
+    // ラベルは「右上の隅(または上の隅)」に向けて引き出し
+    const dx = focus.std>=50 ? -90 : 90;
+    const dy = focus.avg>=50 ? -28 : 38;
+    const lineEndX = cx+dx;
+    const lineEndY = cy+dy;
+    const anchor = dx>0 ? "start" : "end";
+    const textX = lineEndX + (dx>0 ? 8 : -8);
+    qDots = `<g>
+      <circle cx="${cx}" cy="${cy}" r="24" fill="#00B388" opacity="0.10" filter="url(#dotGlow)"/>
+      <circle cx="${cx}" cy="${cy}" r="13" fill="#00B388" opacity="0.18"/>
+      <circle cx="${cx}" cy="${cy}" r="7" fill="#00B388" stroke="#fff" stroke-width="2" filter="url(#dotShadow)"/>
+      <line x1="${cx}" y1="${cy}" x2="${lineEndX}" y2="${lineEndY}" stroke="#0f172a" stroke-width="0.6"/>
+      <text x="${textX}" y="${lineEndY-2}" font-size="14" fill="#0f172a" font-weight="700" text-anchor="${anchor}" letter-spacing="0.5">${focus.store}</text>
+      <text x="${textX}" y="${lineEndY+14}" font-size="10" fill="#64748b" font-weight="500" text-anchor="${anchor}" letter-spacing="0.5" font-family="'Space Grotesk',Inter,sans-serif">SAFE ${focus.avg.toFixed(1)}  /  STD ${focus.std.toFixed(1)}</text>
+    </g>`;
+  }
+  // 選択店舗の状態カード + 全体象限内訳(数のみ)
+  const quadInfo = [
+    {key:"wakuwaku",   name:"挑戦的",       desc:"目標高 × 安全性高"},
+    {key:"nurui",      name:"ぬるい",       desc:"目標低 × 安全性高"},
+    {key:"kitsui",     name:"きつい",       desc:"目標高 × 安全性低"},
+    {key:"kotonakare", name:"事なかれ主義", desc:"目標低 × 安全性低"},
+  ];
+  const counts = {};
+  quadInfo.forEach(q=>counts[q.key]=0);
+  allPlotable.forEach(s=>counts[s.quad.key]++);
+
+  const focusCard = focus ? `
+    <div class="focusCard">
+      <div class="focusLabel">選択中の店舗</div>
+      <div class="focusName">${focus.store}</div>
+      <div class="focusQuad" style="color:${focus.quad.color}">${focus.quad.name} <span class="focusQuadDesc">${focus.quad.desc}</span></div>
+      <div class="focusMetrics">
+        <div class="focusMetric"><div class="fmLabel">心理的安全性</div><div class="fmValue">${focus.avg.toFixed(1)}</div></div>
+        <div class="focusMetric"><div class="fmLabel">目標水準</div><div class="fmValue">${focus.std.toFixed(1)}</div></div>
+        <div class="focusMetric"><div class="fmLabel">回答数</div><div class="fmValue">${focus.n}</div></div>
+      </div>
+    </div>` : `<div class="focusCard"><div class="focusLabel">選択中の店舗</div><div class="focusName">${focusStore}</div><div style="color:#94a3b8;font-size:13px;margin-top:8px">この期のデータがありません(n≥${minN} が必要)</div></div>`;
+
+  const distList = `<div class="distList">${quadInfo.map(q=>`<div class="distRow"><span class="distName">${q.name}</span><span class="distBar"><span class="distBarFill" style="width:${allPlotable.length?(counts[q.key]/allPlotable.length*100):0}%"></span></span><span class="distCount">${counts[q.key]}店</span></div>`).join("")}</div>`;
+
+  // 店舗セレクタ(経営層のみ)
+  const storeSelector = role==="admin" ? `<div class="quadStoreNav">
+    ${STORES.map(s=>`<button class="storeChip${s===focusStore?' active':''}" data-quad-store="${s}">${s}</button>`).join("")}
+  </div>` : "";
+
+  const quadPanel = `<div class="panel quadPanel">
+    <h3>4象限マップ <span class="panelSub">心理的安全性 × 目標水準 / ${dashPeriod}</span></h3>
+    ${storeSelector}
+    ${allPlotable.length===0 ? `<div class="empty">表示できる店舗がありません(n≥${minN} が必要)</div>` :
+    `<div class="quadLayout">
+      <div class="quadChartWrap"><svg viewBox="0 0 ${QW} ${QH}" style="width:100%;height:auto;display:block">${qDefs}${canvas}${qBg}${microGrid}${qAxes}${qLabels}${qAxisLabels}${qDots}</svg></div>
+      <div class="quadSide">
+        ${focusCard}
+        <div class="distTitle">全体の分布(${allPlotable.length}店)</div>
+        ${distList}
+      </div>
+    </div>`}
+  </div>`;
+
+  // ===== 経時変化グラフ =====
+  // 店舗ごとの各期スコア(minN未満はnull)
+  const storeColors = ["#00B388","#2563eb","#d97706","#dc2626","#7c3aed","#0891b2","#db2777","#65a30d"];
+  function storeSeries(store){
+    return PERIODS.map(p=>{
+      const recs = byKey[store+"__"+p] || [];
+      if(recs.length < minN || recs.length===0) return null;
+      return recs.reduce((a,r)=>a+r.score,0)/recs.length;
+    });
+  }
+  const seriesStores = role==="manager" ? [managerStore] : STORES;
+  const seriesData = seriesStores.map((s,i)=>({ store:s, color: role==="manager" ? "#00B388" : storeColors[i%storeColors.length], vals: storeSeries(s) }));
+
+  const W=760,H=280,padL=40,padR=20,padT=20,padB=40;
+  const y = v => H-padB-(v/100)*(H-padT-padB);
+  const xStep = (W-padL-padR)/Math.max(1,PERIODS.length-1);
+  const xAt = i => padL + i*xStep;
+  const grid = [0,25,50,75,100].map(g=>`<line x1="${padL}" y1="${y(g)}" x2="${W-padR}" y2="${y(g)}" stroke="#e2e8f0"/><text x="${padL-8}" y="${y(g)+4}" font-size="11" fill="#94a3b8" text-anchor="end">${g}</text>`).join("");
+  const xLabels = PERIODS.map((p,i)=>`<text x="${xAt(i)}" y="${H-padB+20}" font-size="11" fill="#64748b" text-anchor="middle">${p}</text>`).join("");
+
+  let lines = "";
+  seriesData.forEach(sd=>{
+    // 連続するnon-null区間ごとにパスを引く(欠損期があっても破綻しない)
+    let seg=[];
+    const flush=()=>{ if(seg.length){ lines += `<path d="${seg.map((pt,k)=>(k===0?"M":"L")+pt.x+","+pt.y).join(" ")}" fill="none" stroke="${sd.color}" stroke-width="2.5"/>`; seg.forEach(pt=>{ lines += `<circle cx="${pt.x}" cy="${pt.y}" r="4" fill="${sd.color}" stroke="#fff" stroke-width="1.5"><title>${sd.store} ${pt.period}: ${pt.v.toFixed(1)}</title></circle>`; }); } seg=[]; };
+    sd.vals.forEach((v,i)=>{ if(v===null){ flush(); } else { seg.push({x:xAt(i), y:y(v), v, period:PERIODS[i]}); } });
+    flush();
+    // 管理者ビューは数値ラベルも表示
+    if(role==="manager"){ sd.vals.forEach((v,i)=>{ if(v!==null) lines += `<text x="${xAt(i)}" y="${y(v)-12}" font-size="12" fill="#0f2e22" text-anchor="middle" font-weight="600">${v.toFixed(0)}</text>`; }); }
+  });
+
+  const anyData = seriesData.some(sd=>sd.vals.some(v=>v!==null));
+  const storeLegend = role==="admin" ? `<div class="storeLegend">${seriesData.map(sd=>`<span class="sLeg"><span class="sLegDot" style="background:${sd.color}"></span>${sd.store}</span>`).join("")}</div>` : "";
+  const trendPanel = `<div class="panel"><h3>店舗別 経時変化 ${role==="manager"?"("+managerStore+")":"(全店舗)"}</h3>
+    ${anyData ? `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${grid}${xLabels}${lines}</svg>${storeLegend}`
+    : `<div class="empty">表示できるデータがありません(各期 n≥${minN} が必要)</div>`}</div>`;
+
+  const visibleHeat = storeScores.filter(s=>!s.prot);
+  const qLegend = `<div class="qLegend">${QUESTIONS.map((q,i)=>`<div class="qLegendItem"><span class="qLegendNum">Q${i+1}</span><span class="qLegendCat">${q.cat}</span><span class="qLegendText">${q.text}${q.reverse?'<span class="revTag">逆転</span>':''}</span></div>`).join("")}</div>`;
+  const heat = visibleHeat.length===0 ? `<div class="empty">表示できる店舗がありません(n≥${minN} が必要)</div>`
+    : `<div style="overflow-x:auto"><table>
+        <thead><tr><th class="store">店舗</th>${QUESTIONS.map((q,i)=>`<th title="${q.text}">Q${i+1}</th>`).join("")}</tr></thead>
+        <tbody>${visibleHeat.map(s=>`<tr><td class="store">${s.store}</td>${s.perQ.map((v,i)=>`<td class="cell" style="background:${cellColor(v)}" title="Q${i+1}: ${QUESTIONS[i].text}${v!==null?' ／ 平均'+v.toFixed(1):''}">${v!==null?v.toFixed(1):"—"}</td>`).join("")}</tr>`).join("")}</tbody>
+      </table>
+      <div class="legend"><span>低</span><div class="legendBar"></div><span>高</span><span style="margin-left:auto;color:#94a3b8">各項目 1〜7点(逆転項目は反転済) ／ セルにカーソルを乗せると質問文を表示</span></div>
+      ${qLegend}</div>`;
+  const heatPanel = `<div class="panel"><h3>項目別スコア(7点満点・逆転処理済) — ${dashPeriod}</h3>${heat}</div>`;
+
+  return head + cards + quadPanel + trendPanel + heatPanel;
+}
+
+// ===== 店舗詳細モーダル =====
+function openStoreDetail(store){
+  const byKey = {};
+  responses.forEach(r=>{ const k=r.store+"__"+r.period; (byKey[k]=byKey[k]||[]).push(r); });
+
+  // 各期のサマリ(minN未満の期は保護して非表示)
+  const rows = PERIODS.map(p=>{
+    const recs = byKey[store+"__"+p] || [];
+    const n = recs.length;
+    const prot = n < minN || n === 0;
+    const avg = (!prot) ? recs.reduce((a,r)=>a+r.score,0)/n : null;
+    const perQ = QUESTIONS.map(q=>{
+      if(prot) return null;
+      const vals = recs.map(r=> q.reverse ? (SMAX+1)-r.answers[q.id] : r.answers[q.id]);
+      return vals.reduce((a,b)=>a+b,0)/vals.length;
+    });
+    return {period:p, n, prot, avg, perQ};
+  });
+
+  // 折れ線(この店だけ)
+  const W=560,H=200,padL=36,padR=16,padT=16,padB=34;
+  const y=v=>H-padB-(v/100)*(H-padT-padB);
+  const xStep=(W-padL-padR)/Math.max(1,PERIODS.length-1);
+  const xAt=i=>padL+i*xStep;
+  const grid=[0,50,100].map(g=>`<line x1="${padL}" y1="${y(g)}" x2="${W-padR}" y2="${y(g)}" stroke="#e2e8f0"/><text x="${padL-6}" y="${y(g)+4}" font-size="10" fill="#94a3b8" text-anchor="end">${g}</text>`).join("");
+  const pts=rows.map((r,i)=>r.avg!==null?{x:xAt(i),y:y(r.avg),v:r.avg,p:r.period}:null);
+  const valid=pts.filter(p=>p);
+  const path=valid.map((p,i)=>(i===0?"M":"L")+p.x+","+p.y).join(" ");
+  const dots=pts.map((p,i)=>`${p?`<circle cx="${p.x}" cy="${p.y}" r="4" fill="#00B388" stroke="#fff" stroke-width="1.5"/><text x="${p.x}" y="${p.y-10}" font-size="11" fill="#0f2e22" text-anchor="middle" font-weight="600">${p.v.toFixed(0)}</text>`:""}<text x="${xAt(i)}" y="${H-padB+18}" font-size="10" fill="#64748b" text-anchor="middle">${PERIODS[i]}</text>`).join("");
+  const chart = valid.length ? `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${grid}<path d="${path}" fill="none" stroke="#00B388" stroke-width="2.5"/>${dots}</svg>` : `<div class="empty">表示できるデータがありません</div>`;
+
+  // 期×総合スコアの表(合意度カラムも追加)
+  const summaryTable = `<table class="mTable"><thead><tr><th class="store">期</th><th>回答数</th><th>総合スコア</th><th>状態</th><th>合意度</th></tr></thead>
+    <tbody>${rows.map(r=>{
+      const ag = (!r.prot && r.n>=2) ? storeAgreement(byKey[store+"__"+r.period]||[]) : null;
+      const al = ag ? agreementLabel(ag.rwg) : null;
+      return `<tr><td class="store">${r.period}</td><td class="cell">${r.prot?'🔒':r.n}</td>
+      <td class="cell" style="font-weight:700;color:${r.avg!==null?scoreColor(r.avg):'#94a3b8'}">${r.avg!==null?r.avg.toFixed(1):'—'}</td>
+      <td class="cell">${r.avg!==null?scoreLabel(r.avg):'—'}</td>
+      <td class="cell" style="color:${al?al.color:'#94a3b8'};font-weight:600">${al?al.text:'—'}${ag?` <span style="color:#94a3b8;font-weight:500">(SD ${ag.sd.toFixed(2)})</span>`:""}</td></tr>`;
+    }).join("")}</tbody></table>`;
+
+  // ===== 最新期の合意度詳細 =====
+  const latestRecs = byKey[store+"__"+dashPeriod] || [];
+  const latestAgree = latestRecs.length>=2 ? storeAgreement(latestRecs) : null;
+  const latestAL = latestAgree ? agreementLabel(latestAgree.rwg) : null;
+  let agreementSection = "";
+  if(latestAgree && latestRecs.length>=minN){
+    const scoreDist = storeScoreDistribution(latestRecs);
+    const maxBin = Math.max(...scoreDist, 1);
+    const totalN = latestRecs.length;
+    const HISTW = 480, HISTH = 140, hpad=30;
+    const binW = (HISTW - hpad*2) / SMAX;
+    const histBars = scoreDist.map((v,i)=>{
+      const h = v/maxBin * (HISTH - hpad - 20);
+      const x = hpad + i*binW;
+      const y = HISTH - hpad - h;
+      return `<g>
+        <rect x="${x+4}" y="${y}" width="${binW-8}" height="${h}" fill="#00B388" opacity="${v===0?0.15:0.85}" rx="2"/>
+        ${v>0?`<text x="${x+binW/2}" y="${y-4}" font-size="10" fill="#0f172a" text-anchor="middle" font-weight="600">${v}</text>`:""}
+        <text x="${x+binW/2}" y="${HISTH-hpad+14}" font-size="10" fill="#64748b" text-anchor="middle">${i+1}</text>`;
+    }).join("");
+    const axisLine = `<line x1="${hpad}" y1="${HISTH-hpad}" x2="${HISTW-hpad}" y2="${HISTH-hpad}" stroke="#cbd5e1" stroke-width="1"/>`;
+    const histSvg = `<svg viewBox="0 0 ${HISTW} ${HISTH}" style="width:100%;height:auto;max-width:480px">${axisLine}${histBars}<text x="${HISTW/2}" y="${HISTH-4}" font-size="9" fill="#94a3b8" text-anchor="middle" letter-spacing="1.5">SCORE  (1〜7)</text></svg>`;
+    agreementSection = `
+      <h3 style="margin-top:24px">回答のばらつき(${dashPeriod})</h3>
+      <div class="agreeDetail">
+        <div class="agreeStats">
+          <div class="agStat">
+            <div class="agLabel">合意度 (rWG)</div>
+            <div class="agValue" style="color:${latestAL.color}">${latestAgree.rwg.toFixed(2)}</div>
+            <div class="agSub" style="color:${latestAL.color}">${latestAL.text}</div>
+          </div>
+          <div class="agStat">
+            <div class="agLabel">標準偏差 (SD)</div>
+            <div class="agValue">${latestAgree.sd.toFixed(2)}</div>
+            <div class="agSub">${latestAgree.sd<1.0?"意見が揃っている":latestAgree.sd<1.5?"やや割れ":"意見が割れている"}</div>
+          </div>
+          <div class="agStat">
+            <div class="agLabel">回答者数</div>
+            <div class="agValue">${totalN}</div>
+            <div class="agSub">名の声を集計</div>
+          </div>
+        </div>
+        <div class="agHist">
+          <div class="agHistTitle">回答者の総合スコア分布</div>
+          ${histSvg}
+          <div class="agHistNote">横軸=各回答者のスコア(1〜7点平均) / 縦軸=人数<br>両端に山があれば「店内で意見が割れている」状態を意味します。</div>
+        </div>
+      </div>`;
+  }
+
+  // 項目別スコアの期間推移(行=Q, 列=期)
+  const perQTable = `<div style="overflow-x:auto"><table class="mTable">
+    <thead><tr><th class="store">質問</th>${PERIODS.map(p=>`<th>${p}</th>`).join("")}</tr></thead>
+    <tbody>${QUESTIONS.map((q,qi)=>`<tr><td class="store" style="font-weight:400;font-size:12px">Q${qi+1} ${q.text}${q.reverse?'<span class="revTag">逆転</span>':''}</td>
+      ${rows.map(r=>{const v=r.perQ[qi];return `<td class="cell" style="background:${cellColor(v)}">${v!==null?v.toFixed(1):'—'}</td>`;}).join("")}</tr>`).join("")}</tbody></table></div>`;
+
+  const html = `<div class="modalOverlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modalHead">
+        <h2 style="margin:0">${store} の記録</h2>
+        <button class="modalClose" id="modalClose">✕</button>
+      </div>
+      <div class="modalBody">
+        <h3>総合スコアの推移</h3>
+        ${chart}
+        ${summaryTable}
+        ${agreementSection}
+        <h3 style="margin-top:24px">項目別スコアの推移(7点満点・逆転処理済)</h3>
+        ${perQTable}
+        <div class="legend" style="margin-top:12px"><span>低</span><div class="legendBar"></div><span>高</span></div>
+      </div>
+    </div>
+  </div>`;
+  const holder = document.getElementById("modalHolder");
+  holder.innerHTML = html;
+  document.getElementById("modalClose").addEventListener("click", closeModal);
+  document.getElementById("modalOverlay").addEventListener("click", e=>{ if(e.target.id==="modalOverlay") closeModal(); });
+}
+function closeModal(){ document.getElementById("modalHolder").innerHTML=""; }
+
+function bindEvents(){
+  document.querySelectorAll("[data-go]").forEach(b=> b.addEventListener("click",()=>{ view=b.dataset.go; render(); }));
+  // ログイン
+  const loginBtn = document.getElementById("loginBtn");
+  const pwInput = document.getElementById("pwInput");
+  function tryLogin(){
+    const pw = pwInput.value;
+    if(pw === ADMIN_PASSWORD){ isAdminMode = true; render(); }
+    else { const err=document.getElementById("loginErr"); err.textContent="パスワードが違います"; pwInput.value=""; pwInput.focus(); }
+  }
+  if(loginBtn) loginBtn.addEventListener("click", tryLogin);
+  if(pwInput) pwInput.addEventListener("keydown", e=>{ if(e.key==="Enter") tryLogin(); });
+  // ログアウト
+  const logoutBtn = document.getElementById("logoutBtn");
+  if(logoutBtn) logoutBtn.addEventListener("click", ()=>{ isAdminMode=false; view="home"; render(); });
+  document.querySelectorAll(".scoreCard.clickable").forEach(c=> c.addEventListener("click",()=> openStoreDetail(c.dataset.store)));
+  const seed=document.getElementById("seedBtn");
+  if(seed) seed.addEventListener("click",()=>{ responses = seedSampleData(); save(); role="admin"; view="dashboard"; render(); });
+  const reset=document.getElementById("resetBtn");
+  if(reset) reset.addEventListener("click",()=>{ if(confirm("すべての回答データを消去します。よろしいですか？")){ responses=[]; save(); render(); } });
+  if(view==="survey" && !surveyState.done){
+    const st=document.getElementById("svStore"); if(st) st.addEventListener("change",e=>{ surveyState.store=e.target.value; render(); });
+    const rl=document.getElementById("svRole"); if(rl) rl.addEventListener("change",e=>{ surveyState.roleSel=e.target.value; });
+    const pd=document.getElementById("svPeriod"); if(pd) pd.addEventListener("change",e=>{ surveyState.period=e.target.value; });
+    document.querySelectorAll(".scaleBtn").forEach(b=> b.addEventListener("click",()=>{ surveyState.answers[b.dataset.q]=parseInt(b.dataset.v); render(); }));
+    const sb=document.getElementById("submitBtn");
+    if(sb) sb.addEventListener("click", async ()=>{
+      sb.disabled = true; sb.textContent = "送信中…";
+      const rec = { store:surveyState.store, period:surveyState.period, role:surveyState.roleSel||"未回答", answers:{...surveyState.answers}, score:responseToScore(surveyState.answers), standard:responseToStandard(surveyState.answers), ts:Date.now() };
+      const ok = await submitResponse(rec);
+      if(ok){ surveyState.done=true; render(); }
+      else { sb.disabled = false; sb.textContent = "回答を送信"; }
+    });
+  }
+  if(view==="survey" && surveyState.done){
+    const ag=document.getElementById("again");
+    if(ag) ag.addEventListener("click",()=>{ surveyState={store:"",roleSel:"",period:PERIODS[PERIODS.length-1],answers:{},done:false}; render(); });
+  }
+  if(view==="dashboard"){
+    const dp=document.getElementById("dashPeriod"); if(dp) dp.addEventListener("change",e=>{ dashPeriod=e.target.value; render(); });
+    const mn=document.getElementById("minNSelect"); if(mn) mn.addEventListener("change",e=>{ minN=parseInt(e.target.value); render(); });
+    document.querySelectorAll("[data-quad-store]").forEach(b=> b.addEventListener("click",()=>{ quadStoreSel=b.dataset.quadStore; render(); }));
+  }
+  if(view==="stores"){
+    // 追加
+    const addBtn = document.getElementById("addStoreBtn");
+    const newInput = document.getElementById("newStoreInput");
+    function doAdd(){ if(addStore(newInput.value)){ newInput.value=""; render(); } }
+    if(addBtn) addBtn.addEventListener("click", doAdd);
+    if(newInput) newInput.addEventListener("keydown", e=>{ if(e.key==="Enter") doAdd(); });
+    // 名前変更(blur or Enter)
+    document.querySelectorAll(".storeNameInput").forEach(inp=>{
+      const commit = ()=>{
+        const oldName = inp.dataset.orig;
+        const newName = inp.value;
+        if(newName.trim() === oldName){ inp.value = oldName; return; }
+        if(renameStore(oldName, newName)) render();
+        else { inp.value = oldName; }
+      };
+      inp.addEventListener("blur", commit);
+      inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ inp.blur(); } if(e.key==="Escape"){ inp.value=inp.dataset.orig; inp.blur(); } });
+    });
+    // 並び替え
+    document.querySelectorAll(".upBtn").forEach(b=> b.addEventListener("click",()=>{ moveStore(parseInt(b.dataset.idx), -1); render(); }));
+    document.querySelectorAll(".downBtn").forEach(b=> b.addEventListener("click",()=>{ moveStore(parseInt(b.dataset.idx), 1); render(); }));
+    // 削除
+    document.querySelectorAll(".dangerBtn").forEach(b=> b.addEventListener("click",()=>{ if(deleteStore(b.dataset.store)) render(); }));
+  }
+}
+// 起動: まず画面表示してから、非同期でリモートデータ取得
+render();
+loadResponses();
+</script>
+</body>
+</html>
