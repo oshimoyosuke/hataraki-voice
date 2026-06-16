@@ -238,7 +238,23 @@ try {
   const saved = JSON.parse(localStorage.getItem("ps_stores_v1") || "null");
   STORES = Array.isArray(saved) && saved.length>0 ? saved : DEFAULT_STORES.slice();
 } catch(e){ STORES = DEFAULT_STORES.slice(); }
-function saveStores(){ localStorage.setItem("ps_stores_v1", JSON.stringify(STORES)); }
+// 店舗一覧の保存: リモート有効時はApps Scriptへ、無効時はlocalStorageへ
+async function saveStores(){
+  if(typeof USE_REMOTE !== "undefined" && USE_REMOTE){
+    try {
+      const res = await fetch(API_URL, {
+        method:"POST",
+        body: JSON.stringify({ action:"stores", stores: STORES })
+      });
+      const data = await res.json();
+      if(!data.ok){ alert("店舗の保存に失敗しました: " + (data.error||"unknown")); }
+    } catch(err){
+      alert("店舗の保存に失敗しました: " + String(err));
+    }
+  } else {
+    localStorage.setItem("ps_stores_v1", JSON.stringify(STORES));
+  }
+}
 const ROLES = ["薬剤師","医療事務","登録販売者・その他","管理薬剤師"];
 // 12項目: Edmondson 7項目 + 薬局現場向け 5項目。reverse=逆転項目。cat=カテゴリ
 // 19項目: 心理的安全性4因子(石井遼介)×3問=12 + 薬局現場補助4問 + 目標水準3問
@@ -312,10 +328,17 @@ async function loadResponses(){
   }
   dataLoading = true; dataLoadError = null; render();
   try {
-    const res = await fetch(API_URL, { method:"GET" });
+    // action=all で回答+店舗マスタを一括取得
+    const res = await fetch(API_URL + "?action=all", { method:"GET" });
     const data = await res.json();
-    if(data.ok && Array.isArray(data.responses)){
-      responses = data.responses;
+    if(data.ok){
+      if(Array.isArray(data.responses)) responses = data.responses;
+      if(Array.isArray(data.stores) && data.stores.length>0){
+        STORES = data.stores;
+        // 状態変数の整合性チェック
+        if(!STORES.includes(managerStore)) managerStore = STORES[0];
+        if(!STORES.includes(quadStoreSel)) quadStoreSel = STORES[0];
+      }
     } else {
       throw new Error(data.error || "unknown");
     }
@@ -564,10 +587,16 @@ function storesHtml(){
       <button class="storeBtn dangerBtn" data-store="${name}" title="削除">削除</button>
     </div>`;
   }).join("");
+  const headerDesc = USE_REMOTE
+    ? `店舗の追加・名前変更・並び替え・削除ができます。<br>変更はGoogleスプレッドシートに保存され、<strong>すべての端末(スマホ・PC)に即座に反映</strong>されます。`
+    : `店舗の追加・名前変更・並び替え・削除ができます。<br>名前を変更すると、その店舗の過去回答も自動的に新しい名前へ更新されます。`;
+  const footerDesc = USE_REMOTE
+    ? `名前変更は入力欄からフォーカスが外れた時(Tabキー / 他の場所をクリック)に自動保存されます。Enterキーでも確定できます。並び替えと削除はその場で反映されます。<br><br>⚠️ 過去回答の店舗名は自動更新されません。店舗名を変更した場合、スプレッドシート上で旧店舗名の行を一括置換してください。`
+    : `名前変更は入力欄からフォーカスが外れた時(Tabキー / 他の場所をクリック)に自動保存されます。Enterキーでも確定できます。並び替えと削除はその場で反映されます。`;
   return `<div class="storesPanel">
     <div class="storesHead">
       <h2 style="margin:0">店舗管理</h2>
-      <p style="color:#64748b;font-size:13px;margin-top:6px;line-height:1.7">店舗の追加・名前変更・並び替え・削除ができます。<br>名前を変更すると、その店舗の過去回答も自動的に新しい名前へ更新されます。</p>
+      <p style="color:#64748b;font-size:13px;margin-top:6px;line-height:1.7">${headerDesc}</p>
     </div>
 
     <div class="storesAddBox">
@@ -583,64 +612,66 @@ function storesHtml(){
 
     <div class="storesInfo">
       <strong>変更を保存する操作</strong>
-      <p>名前変更は入力欄からフォーカスが外れた時(Tabキー / 他の場所をクリック)に自動保存されます。Enterキーでも確定できます。並び替えと削除はその場で反映されます。</p>
+      <p>${footerDesc}</p>
     </div>
   </div>`;
 }
 
-// 名前変更: 過去回答の店舗名も一括更新
-function renameStore(oldName, newName){
+// 名前変更: 過去回答の店舗名も一括更新(ローカルモード時のみ過去回答更新)
+async function renameStore(oldName, newName){
   newName = newName.trim();
   if(!newName || newName===oldName) return false;
   if(STORES.includes(newName)){ alert(`「${newName}」はすでに存在します`); return false; }
   const idx = STORES.indexOf(oldName);
   if(idx<0) return false;
   STORES[idx] = newName;
-  saveStores();
-  // 過去回答の店舗名も差し替え
-  responses.forEach(r=>{ if(r.store===oldName) r.store = newName; });
-  save();
-  // 状態変数の追従
+  await saveStores();
+  if(!USE_REMOTE){
+    // ローカルモードでは過去回答の店舗名も書き換え
+    responses.forEach(r=>{ if(r.store===oldName) r.store = newName; });
+    save();
+  } else {
+    // リモートモード: 既存の回答データの店舗名は自動更新されない
+    // スプレッドシート上で手動で書き換える必要がある旨を通知
+    alert(`店舗名を変更しました。\n\n⚠️ 過去回答の店舗名(${oldName})は自動更新されません。スプレッドシートで一括置換してください。`);
+  }
   if(managerStore===oldName) managerStore = newName;
   if(quadStoreSel===oldName) quadStoreSel = newName;
   return true;
 }
-function addStore(name){
+async function addStore(name){
   name = name.trim();
   if(!name) return false;
   if(STORES.includes(name)){ alert(`「${name}」はすでに存在します`); return false; }
   STORES.push(name);
-  saveStores();
+  await saveStores();
   return true;
 }
-function deleteStore(name){
+async function deleteStore(name){
   const respCount = responses.filter(r=>r.store===name).length;
   let msg = `店舗「${name}」を削除しますか？`;
   if(respCount>0){
-    msg += `\n\n⚠️ この店舗には ${respCount}件の過去回答があります。`;
-    msg += `\n\n[OK] = 店舗のみ削除(過去回答は残す)`;
-    msg += `\n[キャンセル] = 削除をやめる`;
-    if(!confirm(msg)) return false;
-    // 過去回答も消すか追加確認
-    if(confirm(`過去の${respCount}件の回答データも一緒に削除しますか？\n\n[OK] = 回答データも完全削除(取り消し不可)\n[キャンセル] = 回答データは残す`)){
+    msg += `\n\n⚠️ この店舗には ${respCount}件の過去回答があります。\n削除しても回答データはスプレッドシートに残ります。\n回答データを消したい場合はスプレッドシートで直接削除してください。`;
+  }
+  if(!confirm(msg)) return false;
+  // ローカルモードのみ回答データも消すオプション
+  if(!USE_REMOTE && respCount>0){
+    if(confirm(`過去の${respCount}件の回答データも一緒に削除しますか?\n\n[OK] = 回答データも完全削除(取り消し不可)\n[キャンセル] = 回答データは残す`)){
       responses = responses.filter(r=>r.store!==name);
       save();
     }
-  } else {
-    if(!confirm(msg)) return false;
   }
   STORES = STORES.filter(s=>s!==name);
-  saveStores();
-  // 状態変数の追従
+  await saveStores();
   if(managerStore===name) managerStore = STORES[0] || "";
   if(quadStoreSel===name) quadStoreSel = STORES[0] || "";
   return true;
 }
-function moveStore(idx, delta){
+async function moveStore(idx, delta){
   const j = idx + delta;
   if(j<0 || j>=STORES.length) return;
   [STORES[idx], STORES[j]] = [STORES[j], STORES[idx]];
-  saveStores();
+  await saveStores();
 }
 
 function homeHtml(){
@@ -1206,29 +1237,27 @@ function bindEvents(){
     document.querySelectorAll("[data-quad-store]").forEach(b=> b.addEventListener("click",()=>{ quadStoreSel=b.dataset.quadStore; render(); }));
   }
   if(view==="stores"){
-    // 追加
     const addBtn = document.getElementById("addStoreBtn");
     const newInput = document.getElementById("newStoreInput");
-    function doAdd(){ if(addStore(newInput.value)){ newInput.value=""; render(); } }
+    async function doAdd(){
+      if(await addStore(newInput.value)){ newInput.value=""; render(); }
+    }
     if(addBtn) addBtn.addEventListener("click", doAdd);
     if(newInput) newInput.addEventListener("keydown", e=>{ if(e.key==="Enter") doAdd(); });
-    // 名前変更(blur or Enter)
     document.querySelectorAll(".storeNameInput").forEach(inp=>{
-      const commit = ()=>{
+      const commit = async ()=>{
         const oldName = inp.dataset.orig;
         const newName = inp.value;
         if(newName.trim() === oldName){ inp.value = oldName; return; }
-        if(renameStore(oldName, newName)) render();
+        if(await renameStore(oldName, newName)) render();
         else { inp.value = oldName; }
       };
       inp.addEventListener("blur", commit);
       inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ inp.blur(); } if(e.key==="Escape"){ inp.value=inp.dataset.orig; inp.blur(); } });
     });
-    // 並び替え
-    document.querySelectorAll(".upBtn").forEach(b=> b.addEventListener("click",()=>{ moveStore(parseInt(b.dataset.idx), -1); render(); }));
-    document.querySelectorAll(".downBtn").forEach(b=> b.addEventListener("click",()=>{ moveStore(parseInt(b.dataset.idx), 1); render(); }));
-    // 削除
-    document.querySelectorAll(".dangerBtn").forEach(b=> b.addEventListener("click",()=>{ if(deleteStore(b.dataset.store)) render(); }));
+    document.querySelectorAll(".upBtn").forEach(b=> b.addEventListener("click", async ()=>{ await moveStore(parseInt(b.dataset.idx), -1); render(); }));
+    document.querySelectorAll(".downBtn").forEach(b=> b.addEventListener("click", async ()=>{ await moveStore(parseInt(b.dataset.idx), 1); render(); }));
+    document.querySelectorAll(".dangerBtn").forEach(b=> b.addEventListener("click", async ()=>{ if(await deleteStore(b.dataset.store)) render(); }));
   }
 }
 // 起動: まず画面表示してから、非同期でリモートデータ取得
