@@ -276,7 +276,21 @@ const SCALE = [
 const SMAX = 7; // 段階数
 const MIN_N = 4; // 集計保護のデフォルト推奨値(参考)
 let minN = 1;    // 実際に適用する最小人数。初期=制限なし。ダッシュボードで変更可
-const PERIODS = ["2025-Q3","2025-Q4","2026-Q1","2026-Q2"];
+const PERIODS = ["2031-05", "2031-04", "2031-03", "2031-02", "2031-01", "2030-12", "2030-11", "2030-10", "2030-09", "2030-08", "2030-07", "2030-06", "2030-05", "2030-04", "2030-03", "2030-02", "2030-01", "2029-12", "2029-11", "2029-10", "2029-09", "2029-08", "2029-07", "2029-06", "2029-05", "2029-04", "2029-03", "2029-02", "2029-01", "2028-12", "2028-11", "2028-10", "2028-09", "2028-08", "2028-07", "2028-06", "2028-05", "2028-04", "2028-03", "2028-02", "2028-01", "2027-12", "2027-11", "2027-10", "2027-09", "2027-08", "2027-07", "2027-06", "2027-05", "2027-04", "2027-03", "2027-02", "2027-01", "2026-12", "2026-11", "2026-10", "2026-09", "2026-08", "2026-07", "2026-06"];
+
+// 現在の年月以降で最も近い実施月を返す(無ければ最新=配列先頭)
+function currentPeriod(){
+  const now = new Date();
+  const ym = now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,"0");
+  // PERIODSは降順なので、現在月以下で最大(=現在月に最も近い)を探す
+  const found = PERIODS.find(p => p <= ym);
+  return found || PERIODS[0];
+}
+// "2026-06" を "2026年6月" に整形
+function formatPeriod(p){
+  const [y,m] = p.split("-");
+  return parseInt(y) + "年" + parseInt(m) + "月";
+}
 
 // ===== Apps Script連携設定 =====
 // ↓↓↓ Apps ScriptのデプロイURL(...exec)をここに貼ってください ↓↓↓
@@ -331,9 +345,17 @@ function seedSampleData(){
   function randn(){ let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
   function clamp(x){ return Math.max(1, Math.min(SMAX, Math.round(x))); }
   const out = [];
+  // サンプルは現在月から未来方向に4ヶ月分(古→新)
+  const samplePeriods = (() => {
+    const cur = currentPeriod();
+    const idx = PERIODS.indexOf(cur);
+    // PERIODS は降順なので [idx-3, idx] が現在月とその後3ヶ月分(降順)
+    const to = Math.max(0, idx - 3);
+    return PERIODS.slice(to, idx+1).reverse(); // 昇順(古→新)
+  })();
   STORES.forEach(store=>{
     const p = profiles[store];
-    PERIODS.forEach((period, pi)=>{
+    samplePeriods.forEach((period, pi)=>{
       const safeCenter = p.safe + p.trend*pi;
       const stdCenter  = p.std;  // 目標水準は店舗の地力としてほぼ固定
       for(let i=0;i<p.n;i++){
@@ -344,7 +366,7 @@ function seedSampleData(){
           const feel = clamp(center + personBias + randn()*0.7);
           answers[q.id] = q.reverse ? (SMAX+1 - feel) : feel;
         });
-        const rec = { store, period, role: ROLES[Math.floor(Math.random()*ROLES.length)], answers, score:0, standard:0, ts: Date.now()-(3-pi)*90*86400000+i*3600000 };
+        const rec = { store, period, role: ROLES[Math.floor(Math.random()*ROLES.length)], answers, score:0, standard:0, ts: Date.now()-(samplePeriods.length-1-pi)*30*86400000+i*3600000 };
         rec.score = responseToScore(answers);
         rec.standard = responseToStandard(answers);
         out.push(rec);
@@ -393,7 +415,7 @@ async function submitResponse(rec){
 let view = "home";
 let role = "admin";
 let managerStore = STORES[0];
-let dashPeriod = PERIODS[PERIODS.length-1];
+let dashPeriod = currentPeriod();
 let quadStoreSel = STORES[0]; // 4象限マップで表示する店舗
 // ===== 管理者認証 =====
 // 注意: クライアント側パスワードは正式なセキュリティではなく「誤閲覧の防止」用途。
@@ -688,7 +710,7 @@ function homeHtml(){
     ${adminBlock}`;
 }
 
-let surveyState = { store:"", roleSel:"", period:PERIODS[PERIODS.length-1], answers:{}, done:false };
+let surveyState = { store:"", roleSel:"", period:currentPeriod(), answers:{}, done:false };
 function surveyHtml(){
   if(surveyState.done){
     return `<div class="thanks">
@@ -724,8 +746,8 @@ function surveyHtml(){
       <label class="field"><span class="fieldLabel">職種(任意)</span>
         <select id="svRole"><option value="">無回答</option>${ROLES.map(r=>`<option value="${r}" ${surveyState.roleSel===r?"selected":""}>${r}</option>`).join("")}</select>
       </label>
-      <label class="field"><span class="fieldLabel">対象期間</span>
-        <select id="svPeriod">${PERIODS.map(p=>`<option value="${p}" ${surveyState.period===p?"selected":""}>${p}</option>`).join("")}</select>
+      <label class="field"><span class="fieldLabel">実施月</span>
+        <select id="svPeriod">${PERIODS.map(p=>`<option value="${p}" ${surveyState.period===p?"selected":""}>${formatPeriod(p)}</option>`).join("")}</select>
       </label>
     </div>
     <div>${qHtml}</div>
@@ -780,7 +802,7 @@ function dashboardHtml(){
         <option value="3" ${minN===3?"selected":""}>n≥3</option>
         <option value="4" ${minN===4?"selected":""}>n≥4(推奨)</option>
       </select>
-      <select id="dashPeriod">${PERIODS.map(p=>`<option value="${p}" ${dashPeriod===p?"selected":""}>${p}</option>`).join("")}</select>
+      <select id="dashPeriod">${PERIODS.map(p=>`<option value="${p}" ${dashPeriod===p?"selected":""}>${formatPeriod(p)}</option>`).join("")}</select>
       <button class="logoutBtn" id="logoutBtn" title="ログアウト">ログアウト</button>
     </div>
   </div>`;
@@ -934,7 +956,7 @@ function dashboardHtml(){
   </div>` : "";
 
   const quadPanel = `<div class="panel quadPanel">
-    <h3>4象限マップ <span class="panelSub">心理的安全性 × 目標水準 / ${dashPeriod}</span></h3>
+    <h3>4象限マップ <span class="panelSub">心理的安全性 × 目標水準 / ${formatPeriod(dashPeriod)}</span></h3>
     ${storeSelector}
     ${allPlotable.length===0 ? `<div class="empty">表示できる店舗がありません(n≥${minN} が必要)</div>` :
     `<div class="quadLayout">
@@ -948,10 +970,16 @@ function dashboardHtml(){
   </div>`;
 
   // ===== 経時変化グラフ =====
+  // データのある実施月のみ表示(古い順)。60ヶ月全部を表示するとX軸が潰れるため。
+  const usedPeriods = (() => {
+    const set = new Set();
+    responses.forEach(r => set.add(r.period));
+    return Array.from(set).filter(p => PERIODS.includes(p)).sort(); // 昇順(古い→新しい)
+  })();
   // 店舗ごとの各期スコア(minN未満はnull)
   const storeColors = ["#00B388","#2563eb","#d97706","#dc2626","#7c3aed","#0891b2","#db2777","#65a30d"];
   function storeSeries(store){
-    return PERIODS.map(p=>{
+    return usedPeriods.map(p=>{
       const recs = byKey[store+"__"+p] || [];
       if(recs.length < minN || recs.length===0) return null;
       return recs.reduce((a,r)=>a+r.score,0)/recs.length;
@@ -962,19 +990,22 @@ function dashboardHtml(){
 
   const W=760,H=280,padL=40,padR=20,padT=20,padB=40;
   const y = v => H-padB-(v/100)*(H-padT-padB);
-  const xStep = (W-padL-padR)/Math.max(1,PERIODS.length-1);
+  const xStep = (W-padL-padR)/Math.max(1, usedPeriods.length-1);
   const xAt = i => padL + i*xStep;
   const grid = [0,25,50,75,100].map(g=>`<line x1="${padL}" y1="${y(g)}" x2="${W-padR}" y2="${y(g)}" stroke="#e2e8f0"/><text x="${padL-8}" y="${y(g)+4}" font-size="11" fill="#94a3b8" text-anchor="end">${g}</text>`).join("");
-  const xLabels = PERIODS.map((p,i)=>`<text x="${xAt(i)}" y="${H-padB+20}" font-size="11" fill="#64748b" text-anchor="middle">${p}</text>`).join("");
+  // X軸ラベルは点数が多い時は間引く(最大8個程度)
+  const labelStep = Math.max(1, Math.ceil(usedPeriods.length/8));
+  const xLabels = usedPeriods.map((p,i)=>{
+    if(i % labelStep !== 0 && i !== usedPeriods.length-1) return "";
+    return `<text x="${xAt(i)}" y="${H-padB+20}" font-size="10" fill="#64748b" text-anchor="middle">${formatPeriod(p)}</text>`;
+  }).join("");
 
   let lines = "";
   seriesData.forEach(sd=>{
-    // 連続するnon-null区間ごとにパスを引く(欠損期があっても破綻しない)
     let seg=[];
-    const flush=()=>{ if(seg.length){ lines += `<path d="${seg.map((pt,k)=>(k===0?"M":"L")+pt.x+","+pt.y).join(" ")}" fill="none" stroke="${sd.color}" stroke-width="2.5"/>`; seg.forEach(pt=>{ lines += `<circle cx="${pt.x}" cy="${pt.y}" r="4" fill="${sd.color}" stroke="#fff" stroke-width="1.5"><title>${sd.store} ${pt.period}: ${pt.v.toFixed(1)}</title></circle>`; }); } seg=[]; };
-    sd.vals.forEach((v,i)=>{ if(v===null){ flush(); } else { seg.push({x:xAt(i), y:y(v), v, period:PERIODS[i]}); } });
+    const flush=()=>{ if(seg.length){ lines += `<path d="${seg.map((pt,k)=>(k===0?"M":"L")+pt.x+","+pt.y).join(" ")}" fill="none" stroke="${sd.color}" stroke-width="2.5"/>`; seg.forEach(pt=>{ lines += `<circle cx="${pt.x}" cy="${pt.y}" r="4" fill="${sd.color}" stroke="#fff" stroke-width="1.5"><title>${sd.store} ${formatPeriod(pt.period)}: ${pt.v.toFixed(1)}</title></circle>`; }); } seg=[]; };
+    sd.vals.forEach((v,i)=>{ if(v===null){ flush(); } else { seg.push({x:xAt(i), y:y(v), v, period:usedPeriods[i]}); } });
     flush();
-    // 管理者ビューは数値ラベルも表示
     if(role==="manager"){ sd.vals.forEach((v,i)=>{ if(v!==null) lines += `<text x="${xAt(i)}" y="${y(v)-12}" font-size="12" fill="#0f2e22" text-anchor="middle" font-weight="600">${v.toFixed(0)}</text>`; }); }
   });
 
@@ -993,7 +1024,7 @@ function dashboardHtml(){
       </table>
       <div class="legend"><span>低</span><div class="legendBar"></div><span>高</span><span style="margin-left:auto;color:#94a3b8">各項目 1〜7点(逆転項目は反転済) ／ セルにカーソルを乗せると質問文を表示</span></div>
       ${qLegend}</div>`;
-  const heatPanel = `<div class="panel"><h3>項目別スコア(7点満点・逆転処理済) — ${dashPeriod}</h3>${heat}</div>`;
+  const heatPanel = `<div class="panel"><h3>項目別スコア(7点満点・逆転処理済) — ${formatPeriod(dashPeriod)}</h3>${heat}</div>`;
 
   return head + cards + quadPanel + trendPanel + heatPanel;
 }
@@ -1003,8 +1034,15 @@ function openStoreDetail(store){
   const byKey = {};
   responses.forEach(r=>{ const k=r.store+"__"+r.period; (byKey[k]=byKey[k]||[]).push(r); });
 
+  // この店舗で実際に回答があった月のみ表示
+  const storePeriods = (() => {
+    const set = new Set();
+    responses.filter(r=>r.store===store).forEach(r=>set.add(r.period));
+    return Array.from(set).filter(p => PERIODS.includes(p)).sort();
+  })();
+
   // 各期のサマリ(minN未満の期は保護して非表示)
-  const rows = PERIODS.map(p=>{
+  const rows = storePeriods.map(p=>{
     const recs = byKey[store+"__"+p] || [];
     const n = recs.length;
     const prot = n < minN || n === 0;
@@ -1020,13 +1058,17 @@ function openStoreDetail(store){
   // 折れ線(この店だけ)
   const W=560,H=200,padL=36,padR=16,padT=16,padB=34;
   const y=v=>H-padB-(v/100)*(H-padT-padB);
-  const xStep=(W-padL-padR)/Math.max(1,PERIODS.length-1);
+  const xStep=(W-padL-padR)/Math.max(1,storePeriods.length-1);
   const xAt=i=>padL+i*xStep;
   const grid=[0,50,100].map(g=>`<line x1="${padL}" y1="${y(g)}" x2="${W-padR}" y2="${y(g)}" stroke="#e2e8f0"/><text x="${padL-6}" y="${y(g)+4}" font-size="10" fill="#94a3b8" text-anchor="end">${g}</text>`).join("");
   const pts=rows.map((r,i)=>r.avg!==null?{x:xAt(i),y:y(r.avg),v:r.avg,p:r.period}:null);
   const valid=pts.filter(p=>p);
   const path=valid.map((p,i)=>(i===0?"M":"L")+p.x+","+p.y).join(" ");
-  const dots=pts.map((p,i)=>`${p?`<circle cx="${p.x}" cy="${p.y}" r="4" fill="#00B388" stroke="#fff" stroke-width="1.5"/><text x="${p.x}" y="${p.y-10}" font-size="11" fill="#0f2e22" text-anchor="middle" font-weight="600">${p.v.toFixed(0)}</text>`:""}<text x="${xAt(i)}" y="${H-padB+18}" font-size="10" fill="#64748b" text-anchor="middle">${PERIODS[i]}</text>`).join("");
+  const xLabelStep = Math.max(1, Math.ceil(storePeriods.length/6));
+  const dots=pts.map((p,i)=>{
+    const showLabel = i % xLabelStep === 0 || i === storePeriods.length-1;
+    return `${p?`<circle cx="${p.x}" cy="${p.y}" r="4" fill="#00B388" stroke="#fff" stroke-width="1.5"/><text x="${p.x}" y="${p.y-10}" font-size="11" fill="#0f2e22" text-anchor="middle" font-weight="600">${p.v.toFixed(0)}</text>`:""}${showLabel?`<text x="${xAt(i)}" y="${H-padB+18}" font-size="9" fill="#64748b" text-anchor="middle">${formatPeriod(storePeriods[i])}</text>`:""}`;
+  }).join("");
   const chart = valid.length ? `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${grid}<path d="${path}" fill="none" stroke="#00B388" stroke-width="2.5"/>${dots}</svg>` : `<div class="empty">表示できるデータがありません</div>`;
 
   // 期×総合スコアの表(合意度カラムも追加)
@@ -1034,7 +1076,7 @@ function openStoreDetail(store){
     <tbody>${rows.map(r=>{
       const ag = (!r.prot && r.n>=2) ? storeAgreement(byKey[store+"__"+r.period]||[]) : null;
       const al = ag ? agreementLabel(ag.rwg) : null;
-      return `<tr><td class="store">${r.period}</td><td class="cell">${r.prot?'🔒':r.n}</td>
+      return `<tr><td class="store">${formatPeriod(r.period)}</td><td class="cell">${r.prot?'🔒':r.n}</td>
       <td class="cell" style="font-weight:700;color:${r.avg!==null?scoreColor(r.avg):'#94a3b8'}">${r.avg!==null?r.avg.toFixed(1):'—'}</td>
       <td class="cell">${r.avg!==null?scoreLabel(r.avg):'—'}</td>
       <td class="cell" style="color:${al?al.color:'#94a3b8'};font-weight:600">${al?al.text:'—'}${ag?` <span style="color:#94a3b8;font-weight:500">(SD ${ag.sd.toFixed(2)})</span>`:""}</td></tr>`;
@@ -1063,7 +1105,7 @@ function openStoreDetail(store){
     const axisLine = `<line x1="${hpad}" y1="${HISTH-hpad}" x2="${HISTW-hpad}" y2="${HISTH-hpad}" stroke="#cbd5e1" stroke-width="1"/>`;
     const histSvg = `<svg viewBox="0 0 ${HISTW} ${HISTH}" style="width:100%;height:auto;max-width:480px">${axisLine}${histBars}<text x="${HISTW/2}" y="${HISTH-4}" font-size="9" fill="#94a3b8" text-anchor="middle" letter-spacing="1.5">SCORE  (1〜7)</text></svg>`;
     agreementSection = `
-      <h3 style="margin-top:24px">回答のばらつき(${dashPeriod})</h3>
+      <h3 style="margin-top:24px">回答のばらつき(${formatPeriod(dashPeriod)})</h3>
       <div class="agreeDetail">
         <div class="agreeStats">
           <div class="agStat">
@@ -1092,7 +1134,7 @@ function openStoreDetail(store){
 
   // 項目別スコアの期間推移(行=Q, 列=期)
   const perQTable = `<div style="overflow-x:auto"><table class="mTable">
-    <thead><tr><th class="store">質問</th>${PERIODS.map(p=>`<th>${p}</th>`).join("")}</tr></thead>
+    <thead><tr><th class="store">質問</th>${storePeriods.map(p=>`<th>${formatPeriod(p)}</th>`).join("")}</tr></thead>
     <tbody>${QUESTIONS.map((q,qi)=>`<tr><td class="store" style="font-weight:400;font-size:12px">Q${qi+1} ${q.text}${q.reverse?'<span class="revTag">逆転</span>':''}</td>
       ${rows.map(r=>{const v=r.perQ[qi];return `<td class="cell" style="background:${cellColor(v)}">${v!==null?v.toFixed(1):'—'}</td>`;}).join("")}</tr>`).join("")}</tbody></table></div>`;
 
@@ -1156,7 +1198,7 @@ function bindEvents(){
   }
   if(view==="survey" && surveyState.done){
     const ag=document.getElementById("again");
-    if(ag) ag.addEventListener("click",()=>{ surveyState={store:"",roleSel:"",period:PERIODS[PERIODS.length-1],answers:{},done:false}; render(); });
+    if(ag) ag.addEventListener("click",()=>{ surveyState={store:"",roleSel:"",period:currentPeriod(),answers:{},done:false}; render(); });
   }
   if(view==="dashboard"){
     const dp=document.getElementById("dashPeriod"); if(dp) dp.addEventListener("change",e=>{ dashPeriod=e.target.value; render(); });
